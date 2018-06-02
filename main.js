@@ -14,14 +14,14 @@ Object.defineProperty(Creep.prototype, 'home', {
         if(!this._home){
             this._home = Game.rooms[this.memory.home];
         }
-        return this._home
+        return this._home;
     },
     enumerable: false,
     configurable: true
 });
 
 
-    var noLimits = Memory.claim.map(c => new Object());
+    var noLimits = Memory.energie ? Memory.claim.map(c => new Object()):[{}];
     console.log('global reset '+JSON.stringify(noLimits));
 
 
@@ -109,24 +109,26 @@ module.exports.loop = function () {
     // loop CLAIM for room updates!
     for(let n = 0;n < Memory.claim.length;n++){
         // Set territorium of a room, to a depth of 2, only lower rank.
-        let nachEins = Game.map.describeExits(Memory.claim[n].room);
-        let rankEins = Memory.claim[n].rank;
-        let Territorium = [];
-        for(let k = 1; k < 9;k+=2){
-            let Eins = nachEins[String(k)]
-            let einsIndex = Memory.claim.findIndex(c=>c.room === Eins)
-            if(einsIndex > -1){
-            if(Eins&&Memory.claim[einsIndex].rank < rankEins){
-                Territorium.push(Eins);
-                let nachZwei = Game.map.describeExits(Eins);
-                for(let m = 1; m < 9;m+=2){
-                    let Zwei = nachZwei[String(m)];
-                    let zweiIndex = Memory.claim.findIndex(c=>c.room === Zwei);
-                    zweiIndex > -1 ? (Zwei && Memory.claim[zweiIndex].rank < Memory.claim[einsIndex].rank)?Territorium.push(Zwei):'':'';
-                }
-            }}
+        if(!sim){}
+            let nachEins = Game.map.describeExits(Memory.claim[n].room);
+            let rankEins = Memory.claim[n].rank;
+            let Territorium = [];
+            for(let k = 1; k < 9;k+=2){
+                let Eins = nachEins[String(k)]
+                let einsIndex = Memory.claim.findIndex(c=>c.room === Eins)
+                if(einsIndex > -1){
+                if(Eins&&Memory.claim[einsIndex].rank < rankEins){
+                    Territorium.push(Eins);
+                    let nachZwei = Game.map.describeExits(Eins);
+                    for(let m = 1; m < 9;m+=2){
+                        let Zwei = nachZwei[String(m)];
+                        let zweiIndex = Memory.claim.findIndex(c=>c.room === Zwei);
+                        zweiIndex > -1 ? (Zwei && Memory.claim[zweiIndex].rank < Memory.claim[einsIndex].rank)?Territorium.push(Zwei):'':'';
+                    }
+                }}
+            }
+            Memory.claim[n].territory = Territorium; 
         }
-        Memory.claim[n].territory = Territorium; 
         //gather spawns
         let spwns = _.filter(Game.spawns, (spawn) => spawn.room.name == Memory.claim[n].room);
         Memory.claim[n].spawns=[];
