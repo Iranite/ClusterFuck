@@ -155,7 +155,7 @@ module.exports.loop = function () {
             let scale = Math.pow(defenseHits.length,1) // the bigger the better?
             defenseLimit = (scale*Math.min(...defenseHits) + _.sum(defenseHits))/(scale*2);
             _.remove(defenses, function(thing) {return thing.hits > defenseLimit}) //gives an array with below average defense structures.
-            var Sterkmy = defenses.length+'🔨'+_.floor(defenseLimit/1000000,2)+'M';
+            var Sterkmy = defenses.length+'@'+_.floor(defenseLimit/1000000,2)+'M';
             for(let n = 0;n < defenses.length;n++){
                 Memory.init.defenses[n]=defenses[n].id;
             }
