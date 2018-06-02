@@ -128,7 +128,7 @@ module.exports.loop = function () {
                 }}
             }
             Memory.claim[n].territory = Territorium; 
-        }
+        }else if(sim){Memory.claim[n].territory = [];}
         //gather spawns
         let spwns = _.filter(Game.spawns, (spawn) => spawn.room.name == Memory.claim[n].room);
         Memory.claim[n].spawns=[];
@@ -280,9 +280,10 @@ module.exports.loop = function () {
     var linkA = Game.getObjectById('5b0ffe43adad371b736e6f81');
     var linkB = Game.getObjectById('5b0152664e0f0e2905bd42dd');
     limits.drops = spawn.pos.findInRange(FIND_DROPPED_RESOURCES,7);
-    noLimits[1].drops = Game.spawns.daar.pos.findInRange(FIND_DROPPED_RESOURCES,7); //temp
+    if(!sim){noLimits[1].drops = Game.spawns.daar.pos.findInRange(FIND_DROPPED_RESOURCES,7);} //temp
     // Extended Tutorial tower behavior FIND_MY_CREEPS
     let towers = spawn.room.find(FIND_STRUCTURES,{filter:s=>s.structureType == STRUCTURE_TOWER});
+    let towergy= false;
     if(towers.length) {
         let friend = spawn.pos.findClosestByRange(FIND_MY_CREEPS,{filter: f => f.hits<f.hitsMax});
         let closestHostile = spawn.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
