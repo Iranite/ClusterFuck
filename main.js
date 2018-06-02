@@ -99,7 +99,7 @@ module.exports.loop = function () {
     if (Game.time >= Memory.init.intense){
         Memory.init.intense = Math.ceil(Game.time+Math.random()*10)+3
         var rare = true;
-        console.log('rare');
+        //console.log('rare');
         
     // we must know our energy limit
         Memory.init.extis = Game.spawns.tuis.room.energyCapacityAvailable;
