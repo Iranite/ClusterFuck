@@ -109,7 +109,7 @@ module.exports.loop = function () {
     // loop CLAIM for room updates!
     for(let n = 0;n < Memory.claim.length;n++){
         // Set territorium of a room, to a depth of 2, only lower rank.
-        if(!sim){}
+        if(!sim){
             let nachEins = Game.map.describeExits(Memory.claim[n].room);
             let rankEins = Memory.claim[n].rank;
             let Territorium = [];
