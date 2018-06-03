@@ -29,8 +29,7 @@ module.exports = {
         case 3: Game.spawns.tuis.room.createConstructionSite(Game.spawns.tuis.pos.x-1,Game.spawns.tuis.pos.y-1,STRUCTURE_EXTENSION); break;
         case 4: Game.spawns.tuis.room.createConstructionSite(Game.spawns.tuis.pos.x-2,Game.spawns.tuis.pos.y+1,STRUCTURE_EXTENSION); break;
         
-        case 5: Game.spawns.tuis.room.createConstructionSite(Game.spawns.tuis.pos.x,Game.spawns.tuis.pos.y-3,STRUCTURE_CONTAINER);
-                Game.spawns.tuis.room.createConstructionSite(Game.spawns.tuis.pos.x-2,Game.spawns.tuis.pos.y-1,STRUCTURE_EXTENSION); break;
+        case 5: Game.spawns.tuis.room.createConstructionSite(Game.spawns.tuis.pos.x-2,Game.spawns.tuis.pos.y-1,STRUCTURE_EXTENSION); break;
         case 6: Game.spawns.tuis.room.createConstructionSite(Game.spawns.tuis.pos.x-1,Game.spawns.tuis.pos.y-2,STRUCTURE_EXTENSION); break;
         case 7: Game.spawns.tuis.room.createConstructionSite(Game.spawns.tuis.pos.x-1,Game.spawns.tuis.pos.y+2,STRUCTURE_EXTENSION); break;
         case 8: Game.spawns.tuis.room.createConstructionSite(Game.spawns.tuis.pos.x+1,Game.spawns.tuis.pos.y-2,STRUCTURE_EXTENSION); break;

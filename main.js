@@ -361,7 +361,7 @@ module.exports.loop = function () {
     else{
         let haufen = Game.rooms[raum].lookForAt(LOOK_RESOURCES,spawn.pos.x,spawn.pos.y+3)[0];
         if(haufen){
-            limits.maxUpgraders = Math.max(Math.floor(Game.rooms[raum].storage.store.energy/Game.rooms[raum].energyCapacityAvailable), 1)
+            limits.maxUpgraders = Math.max(Math.floor(haufen.amount/Game.rooms[raum].energyCapacityAvailable), 1)
         }
         else{
             limits.maxUpgraders = 1;
@@ -488,7 +488,7 @@ module.exports.loop = function () {
     else if(!distributors[roomdex].length && false){
         spawn.spawnCreep(conspa.spwnCar(20,true), conspa.morsch(), {memory: {role: 'distributor', home: raum}});
     }
-    else if(bummis[roomdex].length < 1&& (Memory.init.extis-300)/50 > 4){                   //1Guarding Bummi
+    else if(bummis[roomdex].length < 1&& (Memory.init.extis-300)/50 > 4&&!sim){                   //1Guarding Bummi
         spawn.spawnCreep(conspa.spwnBum(extis), conspa.morsch(), {memory: {role: 'bummi', raum: Game.spawns.daar.room.name, home: raum}});
     }
     else if(((distributors[roomdex].length < 1 && extis > 300) || (distributors[roomdex].length < 1 && harvesters[roomdex].length == Memory.energie.quelle.length))){
