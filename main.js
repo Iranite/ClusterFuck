@@ -108,7 +108,7 @@ module.exports.loop = function () {
         
     // loop CLAIM for room updates!
     for(let n = 0;n < Memory.claim.length;n++){
-        // Set territorium of a room, to a depth of 2, only claimed lower ranks.
+        // Set territorium of a room, to a depth of 2, only claimed lower ranked rooms.
         if(!sim){
             let nachEins = Game.map.describeExits(Memory.claim[n].room);
             let rankEins = Memory.claim[n].rank;
@@ -135,6 +135,13 @@ module.exports.loop = function () {
         for(let m = 0;m < spwns.length;m++){
             Memory.claim[n].spawns[m]=spwns[m].id;
         }
+        // find links
+        let spawn = spwns[0];
+        let linkA = _.filter(Game.rooms[Memory.energie.raum[n]].lookForAt(LOOK_STRUCTURES,spawn.pos.x,spawn.pos.y-3),{'structureType':'link'})[0];
+        if(linkA){Memory.claim[n].linkA = linkA.id;}
+        let ctrl = Game.rooms[Memory.energie.raum[n]].controller.pos;
+        let linkB = _.filter(Game.rooms[Memory.energie.raum[n]].lookAtArea(ctrl.y-4,ctrl.x-4,ctrl.y+4,ctrl.x+4),{'structureType':'link'})[0];
+        if(linkB){Memory.claim[n].linkB = linkB.id;}
     }
         
 
@@ -185,7 +192,7 @@ module.exports.loop = function () {
         //this amount of Carriers are going to be built ... always.
         Memory.energie.maxCarriers = Math.ceil(_.sum(Memory.energie.distance)*2*Memory.init.WORKs*2/50/Memory.energie.maxCarries);
         //each carrier will have this many CARRY parts.
-        Memory.energie.isCarries = Math.min(Math.ceil(_.sum(Memory.energie.distance)*2*Memory.init.WORKs*2/50/Memory.energie.maxCarriers)+1,Memory.energie.maxCarries); //p
+        Memory.energie.isCarries = Math.min(Math.ceil(_.sum(Memory.energie.distance)*2*Memory.init.WORKs*2/50/Memory.energie.maxCarriers),Memory.energie.maxCarries);
 
 
     //Gather Energy source Information to manage and oversee Carrier jobs
@@ -277,8 +284,8 @@ module.exports.loop = function () {
     
     
     
-    var linkA = Game.getObjectById('5b0ffe43adad371b736e6f81');
-    var linkB = Game.getObjectById('5b0152664e0f0e2905bd42dd');
+    var linkA = Game.getObjectById(Memory.claim[roomdex].linkA);
+    var linkB = Game.getObjectById(Memory.claim[roomdex].linkA);
     limits.drops = spawn.pos.findInRange(FIND_DROPPED_RESOURCES,7);
     if(!sim&&noLimits[1]){noLimits[1].drops = Game.spawns.daar.pos.findInRange(FIND_DROPPED_RESOURCES,7);} //temp
     // Extended Tutorial tower behavior FIND_MY_CREEPS
@@ -288,7 +295,8 @@ module.exports.loop = function () {
         let friend = spawn.pos.findClosestByRange(FIND_MY_CREEPS,{filter: f => f.hits<f.hitsMax});
         let closestHostile = spawn.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
         for(let n=0;n<towers.length;n++){
-            towergy = towers[n].energy<towers[n].energyCapacity;
+            // do towers need energy?
+            if(!towergy){towergy = towers[n].energy < towers[n].energyCapacity;}
             if(friend){
                 towers[n].heal(friend);
             }
@@ -297,20 +305,14 @@ module.exports.loop = function () {
             }
         }
     } 
-    // do towers need energy=
-    if(towers.length){
-        for(let n=0;n<towers.length;n++){
-            towergy = towers[n].energy<towers[n].energyCapacity;
-            if(towergy){break;}
-        }
-    }
-    // same for links
+
+    // Links need energy?
     if(linkA&&linkB){
         var linkgy = linkA.energy<linkA.energyCapacity;
         if(linkB.energy < 766&&Game.time%4 == 1){linkA.transferEnergy(linkB);}
     }
     else{var linkgy = false;}
-    
+    // find energy structures needing energy
     if(Game.spawns.tuis.room.energyAvailable<Game.spawns.tuis.room.energyCapacityAvailable||towergy||linkgy){
     var energyNeed = Game.spawns.tuis.pos.findInRange(FIND_STRUCTURES,7, {
                         filter: (structure) => {
@@ -554,7 +556,7 @@ module.exports.loop = function () {
         }
         else if(creep.memory.role == 'upgrader') {
             if(Game.time%(Math.ceil(Math.random()*25)) == 0 && creep.memory.home == 'E47S38'){creep.say('bad spawn!',true);}
-            roleUpgrader.run(creep,linkB,noLimits);
+            roleUpgrader.run(creep,noLimits);
             if(Memory.init.CPU){cpuUpg+=Game.cpu.getUsed()-CPU}
         }
         else if(creep.memory.role == 'builder'||(creep.memory.role == 'repairer' && sites.length)) {
@@ -562,7 +564,7 @@ module.exports.loop = function () {
             if(Memory.init.CPU){cpuBui+=Game.cpu.getUsed()-CPU}
         }
         else if(creep.memory.role == 'carrier') {
-            roleCarrier.run(creep,energyNeed,distributors[roomdex].length,linkgy);
+            roleCarrier.run(creep,energyNeed,distributors[roomdex].length);
             if(Memory.init.CPU){cpuCar+=Game.cpu.getUsed()-CPU}
         }
         else if(creep.memory.role == 'claimer') {

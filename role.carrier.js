@@ -1,7 +1,7 @@
 var roleCarrier = {
 
     /** @param {Creep} creep **/
-    run: function(creep,targets,distris,link) {
+    run: function(creep,targets,distris) {
         
         // memory.travel means: going to source
         var index = Memory.energie.quelle.indexOf(creep.memory.job);
@@ -10,7 +10,8 @@ var roleCarrier = {
         var conti = Memory.energie.conti[index];
         var haufen = Memory.energie.haufen[index];
         let speicher = creep.home.storage;
-        let spawn = Game.getObjectById(Memory.claim[Memory.claim.findIndex(claim => claim.room === creep.memory.home)].spawns[0]);
+        let homedex = Memory.claim.findIndex(claim => claim.room === creep.memory.home);
+        let spawn = Game.getObjectById(Memory.claim[homedex].spawns[0]);
         
         
         
@@ -83,22 +84,17 @@ var roleCarrier = {
         
         //haul back section:
         else if(creep.memory.job && !creep.memory.travel && creep.carry.energy> 0){
-            if(link && creep.carry.energy === creep.carryCapacity){
-                var target = Game.getObjectById('5b0ffe43adad371b736e6f81')
-                if(creep.transfer(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                    creep.moveTo(target);
-                    creep.transfer(speicher,RESOURCE_ENERGY);
+            if(Memory.claim[homedex].linkA){
+                var linkA = Game.getObjectById(Memory.claim[homedex].linkA);
+                var linkgy = linkA.energy<linkA.energyCapacity
+            }
+            if(linkgy && creep.carry.energy === creep.carryCapacity){
+                if(creep.transfer(linkA, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                    creep.moveTo(linkA);
+                    creep.transfer(speicher,RESOURCE_ENERGY); //if possible, transfer to storage anyway
                 }
             }
-        /*    else if(speicher&&distris){
-                if(creep.pos.isNearTo(speicher)){
-                    creep.transfer(speicher,RESOURCE_ENERGY);
-                }
-                else{
-                    creep.moveTo(speicher);
-                    creep.transfer(speicher,RESOURCE_ENERGY);
-                } 
-            }*/else if(targets.length > 0&&!distris){
+            else if(targets.length > 0&&!distris){
                 if(creep.room.name===creep.memory.home){
                     var target = creep.pos.findClosestByRange(targets);
                 }

@@ -1,7 +1,7 @@
 var roleUpgrader = {
 
     /** @param {Creep} creep **/
-    run: function(creep,link,noLimits) {
+    run: function(creep,noLimits) {
         let spawn = Game.getObjectById(Memory.claim[Memory.claim.findIndex(claim => claim.room === creep.memory.home)].spawns[0]);
         let speicher = creep.home.storage;
         var homedex = Memory.claim.findIndex(claim => claim.room === creep.memory.home);
@@ -35,9 +35,9 @@ var roleUpgrader = {
                 creep.moveTo(target);
             }
         }
-        else if(Memory.init.link&& creep.room.name == Game.spawns.tuis.room.name){
-            if(creep.withdraw(link,RESOURCE_ENERGY) == ERR_NOT_IN_RANGE){
-                creep.moveTo(link);
+        else if(Memory.claim[homedex].linkB&& creep.room.name == creep.memory.home){
+            if(creep.withdraw(Game.getObjectById(Memory.claim[homedex].linkB),RESOURCE_ENERGY) == ERR_NOT_IN_RANGE){
+                creep.moveTo(Game.getObjectById(Memory.claim[homedex].linkB));
             }
         }
         else if(creep.home.storage){
