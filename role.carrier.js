@@ -81,7 +81,7 @@ var roleCarrier = {
         }
         
         
-        
+        //haul back section:
         else if(creep.memory.job && !creep.memory.travel && creep.carry.energy> 0){
             if(link && creep.carry.energy === creep.carryCapacity){
                 var target = Game.getObjectById('5b0ffe43adad371b736e6f81')
@@ -90,14 +90,15 @@ var roleCarrier = {
                     creep.transfer(speicher,RESOURCE_ENERGY);
                 }
             }
-            else if(speicher&&distris){
+        /*    else if(speicher&&distris){
                 if(creep.pos.isNearTo(speicher)){
                     creep.transfer(speicher,RESOURCE_ENERGY);
                 }
                 else{
                     creep.moveTo(speicher);
-                }
-            }else if(targets.length > 0){
+                    creep.transfer(speicher,RESOURCE_ENERGY);
+                } 
+            }*/else if(targets.length > 0&&!distris){
                 if(creep.room.name===creep.memory.home){
                     var target = creep.pos.findClosestByRange(targets);
                 }
@@ -118,11 +119,11 @@ var roleCarrier = {
                 }
             }
             else{
-                if(creep.pos.isEqualTo(spawn.pos.x, spawn.pos.y+3)){
+                if(creep.pos.isEqualTo(spawn.pos.x, spawn.pos.y-3)){
                     creep.drop(RESOURCE_ENERGY);
                 }
                 else{
-                    creep.moveTo(spawn.pos.x, spawn.pos.y+3)
+                    creep.moveTo(spawn.pos.x, spawn.pos.y-3)
                 }
                 
             } 
