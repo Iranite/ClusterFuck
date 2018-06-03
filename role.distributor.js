@@ -1,11 +1,12 @@
 var roleDistributor = {
 
     /** @param {Creep} creep **/
-    run: function(creep,targets,noLimits){
+    run: function(creep,noLimits){
         let homedex = Memory.claim.findIndex(claim => claim.room === creep.memory.home);
         let spawn = Game.getObjectById(Memory.claim[homedex].spawns[0]);
         let speicher = creep.home.storage;
         let drops = noLimits[homedex].drops;
+        let targets = noLimits[homedex].energyNeed;
         // renew this creep when possible
         if(creep.pos.isNearTo(spawn)&&creep.ticksToLive < 1400){
             if(spawn.renewCreep(creep) == 0){

@@ -1,7 +1,7 @@
 var roleCarrier = {
 
     /** @param {Creep} creep **/
-    run: function(creep,targets,distris) {
+    run: function(creep,noLimits,distris) {
         
         // memory.travel means: going to source
         var index = Memory.energie.quelle.indexOf(creep.memory.job);
@@ -12,6 +12,7 @@ var roleCarrier = {
         let speicher = creep.home.storage;
         let homedex = Memory.claim.findIndex(claim => claim.room === creep.memory.home);
         let spawn = Game.getObjectById(Memory.claim[homedex].spawns[0]);
+        let targets = noLimits[homedex].energyNeed;
         
         
         

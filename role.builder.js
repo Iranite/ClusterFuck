@@ -1,9 +1,12 @@
 var roleBuilder = {
 
     /** @param {Creep} creep **/
-    run: function(creep,sites,siteroom) {
-        let index = Memory.claim.findIndex(claim => claim.room === siteroom)
+    run: function(creep,noLimits) {
         let speicher = creep.home.storage;
+        let homedex = Memory.claim.findIndex(claim => claim.room === creep.memory.home);
+        let sites = noLimits[homedex].sites;
+        let siteroom = noLimits[homedex].siteroom;
+        let index = Memory.claim.findIndex(claim => claim.room === siteroom)
     
     // Self destruct if no job.
         if(!sites.length){
