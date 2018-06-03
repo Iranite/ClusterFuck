@@ -137,11 +137,13 @@ module.exports.loop = function () {
         }
         // find links
         let spawn = spwns[0];
-        let linkA = _.filter(Game.rooms[Memory.energie.raum[n]].lookForAt(LOOK_STRUCTURES,spawn.pos.x,spawn.pos.y-3),{'structureType':'link'})[0];
-        if(linkA){Memory.claim[n].linkA = linkA.id;}
-        let ctrl = Game.rooms[Memory.energie.raum[n]].controller.pos;
-        let linkB = _.filter(Game.rooms[Memory.energie.raum[n]].lookAtArea(ctrl.y-4,ctrl.x-4,ctrl.y+4,ctrl.x+4),{'structureType':'link'})[0];
-        if(linkB){Memory.claim[n].linkB = linkB.id;}
+        if(spawn){
+            let linkA = _.filter(Game.rooms[Memory.claim[n].room].lookForAt(LOOK_STRUCTURES,spawn.pos.x,spawn.pos.y-3),{'structureType':'link'})[0];
+            if(linkA){Memory.claim[n].linkA = linkA.id;}
+            let ctrl = Game.rooms[Memory.claim[n].room].controller.pos;
+            let linkB = _.filter(Game.rooms[Memory.claim[n].room].lookForAtArea(LOOK_STRUCTURES,ctrl.y-4,ctrl.x-4,ctrl.y+4,ctrl.x+4,{asArray: true}),{'structure':{'structureType':'link'}})[0];
+            if(linkB){Memory.claim[n].linkB = linkB.structure.id;}
+        }
     }
         
 
@@ -285,7 +287,7 @@ module.exports.loop = function () {
     
     
     var linkA = Game.getObjectById(Memory.claim[roomdex].linkA);
-    var linkB = Game.getObjectById(Memory.claim[roomdex].linkA);
+    var linkB = Game.getObjectById(Memory.claim[roomdex].linkB);
     limits.drops = spawn.pos.findInRange(FIND_DROPPED_RESOURCES,7);
     if(!sim&&noLimits[1]){noLimits[1].drops = Game.spawns.daar.pos.findInRange(FIND_DROPPED_RESOURCES,7);} //temp
     // Extended Tutorial tower behavior FIND_MY_CREEPS
