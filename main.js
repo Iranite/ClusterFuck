@@ -108,7 +108,7 @@ module.exports.loop = function () {
         
     // loop CLAIM for room updates!
     for(let n = 0;n < Memory.claim.length;n++){
-        // Set territorium of a room, to a depth of 2, only lower rank.
+        // Set territorium of a room, to a depth of 2, only claimed lower ranks.
         if(!sim){
             let nachEins = Game.map.describeExits(Memory.claim[n].room);
             let rankEins = Memory.claim[n].rank;
@@ -322,9 +322,8 @@ module.exports.loop = function () {
                         }});
     }
     else{var energyNeed = [];}
-    var extis = Memory.init.extis;
     var sites = [], siteroom = [];
-    Memory.init.AlarmRoom = false;
+    var extis = Game.rooms[raum].energyAvailable;   
     
     
     
@@ -428,7 +427,7 @@ module.exports.loop = function () {
 
 //Spawning all the creeps
     var needclaim = false;
-    if ((Memory.init.extis-300)/50 > 19&&!Memory.init.Alarm&&distributors[roomdex].length){
+    if ((extis-300)/50 > 19&&!Memory.init.Alarm&&distributors[roomdex].length){
         for (let n=0;n < Memory.claim.length;n++){
                 let sourceId = Memory.claim[n].id;
             var claim = false;
@@ -488,20 +487,20 @@ module.exports.loop = function () {
     else if(!distributors[roomdex].length && false){
         spawn.spawnCreep(conspa.spwnCar(20,true), conspa.morsch(), {memory: {role: 'distributor', home: raum}});
     }
-    else if(bummis[roomdex].length < 1&& (Memory.init.extis-300)/50 > 4&&!sim){                   //1Guarding Bummi
+    else if(bummis[roomdex].length < 1&& (extis-300)/50 > 4&&!sim){                   //1Guarding Bummi
         spawn.spawnCreep(conspa.spwnBum(extis), conspa.morsch(), {memory: {role: 'bummi', raum: Game.spawns.daar.room.name, home: raum}});
     }
     else if(((distributors[roomdex].length < 1 && extis > 300) || (distributors[roomdex].length < 1 && harvesters[roomdex].length == Memory.energie.quelle.length))){
-        spawn.spawnCreep(conspa.spwnCar(Math.min(Math.floor((Memory.init.extis-300)/50*2/3)+3,32),true), conspa.morsch(), {memory: {role: 'distributor', home: raum}});
+        spawn.spawnCreep(conspa.spwnCar(Math.min(Math.floor((extis-300)/50*2/3)+3,32),true), conspa.morsch(), {memory: {role: 'distributor', home: raum}});
     } 
-    else if((builders[roomdex].length < Math.min(maxBuilders,sites.length) && sites.length && (Memory.init.extis-300)/50 > 0 ) ||
+    else if((builders[roomdex].length < Math.min(maxBuilders,sites.length) && sites.length && (extis-300)/50 > 0 ) ||
             (builders[roomdex].length < Math.min(maxBuilders,sites.length) && sites.length && harvesters[roomdex].length == Memory.energie.quelle.length)){
         spawn.spawnCreep(conspa.spwnBui(extis), conspa.morsch(), {memory: {role: 'builder', home: raum}});
     }
-    else if(pavers[roomdex].length < 1&&Memory.paving.current&&(Memory.init.extis-300)/50>20&&carriers[roomdex].length>Memory.energie.maxCarriers/2){ 
+    else if(pavers[roomdex].length < 1&&Memory.paving.current&&(extis-300)/50>20&&carriers[roomdex].length>Memory.energie.maxCarriers/2){ 
         spawn.spawnCreep([WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE], conspa.morsch(), {memory: {role: 'paver', home: raum}});
     }
-    else if(pavers[roomdex].length < 1&&Memory.paving.current&&(Memory.init.extis-300)/50>4&&carriers[roomdex].length>Memory.energie.maxCarriers/2){
+    else if(pavers[roomdex].length < 1&&Memory.paving.current&&(extis-300)/50>4&&carriers[roomdex].length>Memory.energie.maxCarriers/2){
         spawn.spawnCreep([WORK,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE], conspa.morsch(), {memory: {role: 'paver', home: raum}});
     }
     else if(repairers[roomdex].length < 1&& Memory.init.defenses.length&&carriers[roomdex].length>Memory.energie.maxCarriers/2){
