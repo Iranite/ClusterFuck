@@ -17,56 +17,6 @@ module.exports = {
         //return String.fromCharCode(Math.ceil(Math.random()*26+64))+Memory.init.number+String.fromCharCode(Math.ceil(Math.random()*26+64));
         console.log('oops');
     },
-// Building the base    
-    buildExtis: function(extis){
-    //convert power to extis
-    extis = (extis-300)/50;
-    if(Game.spawns.tuis.room.controller.level>=2){
-    switch(extis){
-        case 0: Game.spawns.tuis.room.createConstructionSite(Game.spawns.tuis.pos.x+1,Game.spawns.tuis.pos.y-1,STRUCTURE_EXTENSION); break;
-        case 1: Game.spawns.tuis.room.createConstructionSite(Game.spawns.tuis.pos.x+1,Game.spawns.tuis.pos.y+1,STRUCTURE_EXTENSION); break;
-        case 2: Game.spawns.tuis.room.createConstructionSite(Game.spawns.tuis.pos.x-1,Game.spawns.tuis.pos.y+1,STRUCTURE_EXTENSION); break;
-        case 3: Game.spawns.tuis.room.createConstructionSite(Game.spawns.tuis.pos.x-1,Game.spawns.tuis.pos.y-1,STRUCTURE_EXTENSION); break;
-        case 4: Game.spawns.tuis.room.createConstructionSite(Game.spawns.tuis.pos.x-2,Game.spawns.tuis.pos.y+1,STRUCTURE_EXTENSION); break;
-        
-        case 5: Game.spawns.tuis.room.createConstructionSite(Game.spawns.tuis.pos.x-2,Game.spawns.tuis.pos.y-1,STRUCTURE_EXTENSION); break;
-        case 6: Game.spawns.tuis.room.createConstructionSite(Game.spawns.tuis.pos.x-1,Game.spawns.tuis.pos.y-2,STRUCTURE_EXTENSION); break;
-        case 7: Game.spawns.tuis.room.createConstructionSite(Game.spawns.tuis.pos.x-1,Game.spawns.tuis.pos.y+2,STRUCTURE_EXTENSION); break;
-        case 8: Game.spawns.tuis.room.createConstructionSite(Game.spawns.tuis.pos.x+1,Game.spawns.tuis.pos.y-2,STRUCTURE_EXTENSION); break;
-        case 9: Game.spawns.tuis.room.createConstructionSite(Game.spawns.tuis.pos.x+2,Game.spawns.tuis.pos.y-1,STRUCTURE_EXTENSION); break;
-        
-        case 10: Game.spawns.tuis.room.createConstructionSite(Game.spawns.tuis.pos.x+2,Game.spawns.tuis.pos.y+1,STRUCTURE_EXTENSION); break;
-        case 11: Game.spawns.tuis.room.createConstructionSite(Game.spawns.tuis.pos.x+1,Game.spawns.tuis.pos.y+2,STRUCTURE_EXTENSION); break;
-        case 12: Game.spawns.tuis.room.createConstructionSite(Game.spawns.tuis.pos.x+3,Game.spawns.tuis.pos.y-2,STRUCTURE_EXTENSION); break;
-        case 13: Game.spawns.tuis.room.createConstructionSite(Game.spawns.tuis.pos.x+2,Game.spawns.tuis.pos.y-3,STRUCTURE_EXTENSION); break;
-        case 14: Game.spawns.tuis.room.createConstructionSite(Game.spawns.tuis.pos.x+3,Game.spawns.tuis.pos.y-3,STRUCTURE_EXTENSION); break;
-        
-        case 15: Game.spawns.tuis.room.createConstructionSite(Game.spawns.tuis.pos.x+4,Game.spawns.tuis.pos.y-3,STRUCTURE_EXTENSION); break;
-        case 16: Game.spawns.tuis.room.createConstructionSite(Game.spawns.tuis.pos.x+3,Game.spawns.tuis.pos.y-4,STRUCTURE_EXTENSION); break;
-        case 17: Game.spawns.tuis.room.createConstructionSite(Game.spawns.tuis.pos.x+2,Game.spawns.tuis.pos.y+3,STRUCTURE_EXTENSION); break;
-        case 18: Game.spawns.tuis.room.createConstructionSite(Game.spawns.tuis.pos.x+3,Game.spawns.tuis.pos.y+2,STRUCTURE_EXTENSION); break;
-        case 19: Game.spawns.tuis.room.createConstructionSite(Game.spawns.tuis.pos.x+3,Game.spawns.tuis.pos.y+3,STRUCTURE_EXTENSION); break;
-        
-        case 20: Game.spawns.tuis.room.createConstructionSite(Game.spawns.tuis.pos.x-3,Game.spawns.tuis.pos.y+2,STRUCTURE_EXTENSION); break;
-        case 21: Game.spawns.tuis.room.createConstructionSite(Game.spawns.tuis.pos.x-3,Game.spawns.tuis.pos.y+3,STRUCTURE_EXTENSION); break;
-        case 22: Game.spawns.tuis.room.createConstructionSite(Game.spawns.tuis.pos.x-2,Game.spawns.tuis.pos.y+3,STRUCTURE_EXTENSION); break;
-        case 23: Game.spawns.tuis.room.createConstructionSite(Game.spawns.tuis.pos.x+4,Game.spawns.tuis.pos.y+3,STRUCTURE_EXTENSION); break;
-        case 24: Game.spawns.tuis.room.createConstructionSite(Game.spawns.tuis.pos.x-4,Game.spawns.tuis.pos.y+3,STRUCTURE_EXTENSION); break;
-        
-        case 25: Game.spawns.tuis.room.createConstructionSite(Game.spawns.tuis.pos.x-3,Game.spawns.tuis.pos.y-3,STRUCTURE_EXTENSION); break;
-        case 26: Game.spawns.tuis.room.createConstructionSite(Game.spawns.tuis.pos.x-3,Game.spawns.tuis.pos.y-4,STRUCTURE_EXTENSION); break;
-        case 27: Game.spawns.tuis.room.createConstructionSite(Game.spawns.tuis.pos.x-4,Game.spawns.tuis.pos.y-3,STRUCTURE_EXTENSION); break;
-        case 28: Game.spawns.tuis.room.createConstructionSite(Game.spawns.tuis.pos.x-2,Game.spawns.tuis.pos.y-3,STRUCTURE_EXTENSION); break;
-        case 29: Game.spawns.tuis.room.createConstructionSite(Game.spawns.tuis.pos.x-3,Game.spawns.tuis.pos.y-2,STRUCTURE_EXTENSION); break;
-        default:
-    }}
-        if(Game.spawns.tuis.room.controller.level>2){
-            Game.spawns.tuis.room.createConstructionSite(Game.spawns.tuis.pos.x-3,Game.spawns.tuis.pos.y,STRUCTURE_TOWER);
-        }
-        if(Game.spawns.tuis.room.controller.level>3){
-            Game.spawns.tuis.room.createConstructionSite(Game.spawns.tuis.pos.x,Game.spawns.tuis.pos.y+3,STRUCTURE_STORAGE);
-        }
-    },
 // configuring the creeps    
     spwnHar: function(extis) {
     //convert power to extis
