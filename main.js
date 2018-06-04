@@ -114,6 +114,7 @@ module.exports.loop = function () {
         for(let m = 0;m < spwns.length;m++){
             Memory.claim[n].spawns[m]=spwns[m].id;
         }
+        
         //change rank if eligible
         if(Memory.claim[n].rank == 0 && Memory.claim[n].spawns.length > 0){
             Memory.claim[n].rank = 1;
@@ -123,11 +124,12 @@ module.exports.loop = function () {
                 Memory.claim[n].rank = 2;
             }
         }
-        // Set territorium of a room, to a depth of 2, only claimed lower ranked rooms.
+
+        // Set territory of a room, lesser or equal rank for first layer, lesser for the second.
         if(!sim){
             let nachEins = Game.map.describeExits(Memory.claim[n].room);
             let rankEins = Memory.claim[n].rank;
-            let Territorium = [];
+            let Territorium = [Memory.claim[n].room];
             for(let k = 1; k < 9;k+=2){
                 let Eins = nachEins[String(k)]
                 let einsIndex = Memory.claim.findIndex(c=>c.room === Eins)
@@ -138,12 +140,13 @@ module.exports.loop = function () {
                     for(let m = 1; m < 9;m+=2){
                         let Zwei = nachZwei[String(m)];
                         let zweiIndex = Memory.claim.findIndex(c=>c.room === Zwei);
-                        zweiIndex > -1 ? (Zwei && Memory.claim[zweiIndex].rank <= Memory.claim[einsIndex].rank)?Territorium.push(Zwei):'':'';
+                        zweiIndex > -1 ? (Zwei && Memory.claim[zweiIndex].rank < Memory.claim[einsIndex].rank)?Territorium.push(Zwei):'':'';
                     }
                 }}
             }
             Memory.claim[n].territory = Territorium; 
         }else if(sim){Memory.claim[n].territory = [];}
+
         // find and build stuff
         let spawn = spwns[0];
         if(spawn){
@@ -165,7 +168,7 @@ module.exports.loop = function () {
 
 
         
-    // Find defense to repair
+        // Find defense to repair
         let defenses = Game.rooms[Memory.claim[0].room].find(FIND_STRUCTURES, {
                         filter: (structure) => {
                         return (structure.structureType == STRUCTURE_WALL ||
@@ -188,7 +191,7 @@ module.exports.loop = function () {
             }
         }
         
-            // Initialize Road maintenance once roads are found
+        // Initialize Road maintenance once roads are found
         if(!Memory.paving.current){
             let roads = Game.rooms[Memory.paving.raum[0]].find(FIND_STRUCTURES,{filter: (structure) => {return structure.structureType == STRUCTURE_ROAD }});
             if(roads.length){
@@ -302,8 +305,7 @@ module.exports.loop = function () {
     
     
     
-    var linkA = Game.getObjectById(Memory.claim[roomdex].linkA);
-    var linkB = Game.getObjectById(Memory.claim[roomdex].linkB);
+    
     limits.drops = spawn.pos.findInRange(FIND_DROPPED_RESOURCES,7);
     if(!sim&&noLimits[1]){noLimits[1].drops = Game.getObjectById(Memory.claim[1].spawns[0]).pos.findInRange(FIND_DROPPED_RESOURCES,7);} //temp
     // Extended Tutorial tower behavior FIND_MY_CREEPS
@@ -323,18 +325,20 @@ module.exports.loop = function () {
             }
         }
     } 
-
+    let linkA = Game.getObjectById(Memory.claim[roomdex].linkA);
+    let linkB = Game.getObjectById(Memory.claim[roomdex].linkB);
+    let linkgy = false;
     // Links need energy?
     if(linkA&&linkB){
-        var linkgy = linkA.energy<linkA.energyCapacity;
+        linkgy = linkA.energy<linkA.energyCapacity;
         if(linkB.energy < 766&&Game.time%4 == 1){linkA.transferEnergy(linkB);}
     }
     else if(linkA && !linkB){
         let ctrl = Game.rooms[Memory.claim[roomdex].room].controller.pos;
         new RoomVisual(Memory.claim[roomdex].room).text('Build Link!',ctrl.x,ctrl.y+1);
         new RoomVisual(Memory.claim[roomdex].room).rect(ctrl.x-4,ctrl.y-4,8,8,{fill: 'transparent', stroke: '#fff'});
+        linkgy = linkA.energy<linkA.energyCapacity;
     }
-    else{var linkgy = false;}
     // find energy structures needing energy
     if(Game.rooms[raum].energyAvailable<Game.rooms[raum].energyCapacityAvailable||towergy||linkgy){
     limits.energyNeed = Game.getObjectById(Memory.claim[roomdex].spawns[0]).pos.findInRange(FIND_STRUCTURES,7, {
@@ -410,7 +414,7 @@ module.exports.loop = function () {
     distributors[roomdex]   = _.filter(Game.creeps, (creep) => creep.memory.role == 'distributor' && creep.memory.home == raum);
     repairers[roomdex]= _.filter(Game.creeps, (creep) => creep.memory.role == 'repairer' && creep.memory.home == raum);
     pavers[roomdex]= _.filter(Game.creeps, (creep) => creep.memory.role == 'paver' && creep.memory.home == raum);
-    limits.maxBuilders = limits.maxUpgraders-repairers[roomdex].length;
+    limits.maxBuilders = limits.maxUpgraders;
 // temporary  code for second room
  
     if(!upgraders[1].length&&!sim&&noLimits[1]){
@@ -443,13 +447,19 @@ module.exports.loop = function () {
 
 
 
-//Spawning all the creeps
-    var needclaim = false;
-    if ((extis-300)/50 > 19&&!Memory.claim[roomdex].Alarm&&distributors[roomdex].length){
-        for (let n=0;n < Memory.claim.length;n++){
-                let sourceId = Memory.claim[n].id;
+    //Spawning all the creeps
+    //Spawn Claimers
+    let needclaim = false; // don't build upgraders, if we need claimers.
+    if (extis >= 1300 && !Memory.claim[roomdex].Alarm && distributors[roomdex].length && Memory.claim[roomdex].rank == 2 && rare){
+        for (let n=0;n < Memory.claim[roomdex].territory.length;n++){
+            let index = Memory.claim.findIndex(claim => claim.room === Memory.claim[roomdex].territory[n]);
+            //check if... rank is 0, parent or parent of parent is this.
+            if(Memory.claim[index].rank > 0){
+                break;
+            }
+            let sourceId = Memory.claim[index].id;
             var claim = false;
-            if(Game.rooms[Memory.claim[n].room] && Memory.claim[n].rank === 0){
+            if(Game.rooms[Memory.claim[index].room] && Memory.claim[index].rank === 0){
                 if(Game.getObjectById(sourceId).reservation){
                     if(Game.getObjectById(sourceId).reservation.ticksToEnd<1000){
                         claim = true;
@@ -459,17 +469,14 @@ module.exports.loop = function () {
                     claim = true;
                 }
             }
-            if (!_.some(Game.creeps, c => c.memory.role == 'claimer' && c.memory.sourceId == sourceId) && claim){
-                spawn.spawnCreep([CLAIM,CLAIM,CLAIM,MOVE,MOVE], conspa.morsch(), {memory: {role: 'claimer', sourceId: sourceId, home: raum}});
-                var needclaim = true;
-                break;
-                //console.log('Claiming '+Memory.claim[n].room);
-                
-                
+            if (!_.some(claimers[roomdex], c => c.memory.role == 'claimer' && c.memory.sourceId == sourceId) && claim){
+                spawn.spawnCreep([CLAIM,CLAIM,MOVE,MOVE], conspa.morsch(), {memory: {role: 'claimer', sourceId: sourceId, home: raum}});
+                needclaim = true;
+                break;   
             }
         }
-}
-    
+    }
+    //Spawn Harvesters
     if(harvesters[roomdex].length&&harvesters[roomdex].length < Memory.energie.quelle.length){
         // using the numbers to spawn "oldest source" first
         for (let n = 0; n < Memory.energie.quelle.length; n++){

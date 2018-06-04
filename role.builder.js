@@ -9,24 +9,24 @@ var roleBuilder = {
         let siteroom = noLimits[homedex].siteroom;
         let index = Memory.claim.findIndex(claim => claim.room === siteroom)
     
-    // Self destruct if no job.
-        if(!sites.length){
-            creep.say('bye...')
-            if(spawn.recycleCreep(creep) == ERR_NOT_IN_RANGE){
-                creep.moveTo(spawn);
-            }
-            
-        }
-    // Determining working condition
+    
+        // Determining working condition
 	    if(creep.memory.werk && creep.carry.energy == 0) {
             creep.memory.werk = false;
 	    }
 	    if(!creep.memory.werk && creep.carry.energy == creep.carryCapacity) {
 	        creep.memory.werk = true;
 	    }
-	    
-    // go working
-	    if(creep.memory.werk) {
+        
+        // Self destruct if no job.
+        if(!sites.length){
+            creep.say('bye...')
+            if(spawn.recycleCreep(creep) == ERR_NOT_IN_RANGE){
+                creep.moveTo(spawn);
+            }
+        }
+        // go working
+	    else if(creep.memory.werk) {
 	        if(creep.room.name == siteroom){
 	            if(creep.pos.x == 0||creep.pos.y == 0){creep.move(3);}
 	            else if(creep.pos.x == 49||creep.pos.y == 49){creep.move(8);}
@@ -43,7 +43,7 @@ var roleBuilder = {
 	            creep.moveTo(creep.pos.findClosestByPath(creep.room.findExitTo(siteroom)));
 	        }
 	    }
-    // getting energy
+        // getting energy
         else if(Memory.claim[index].rank == 0 && creep.room.name !== creep.home.name){
             var drops = creep.pos.findClosestByRange(FIND_DROPPED_RESOURCES);
             if(!drops){

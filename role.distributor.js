@@ -27,7 +27,7 @@ var roleDistributor = {
         if(creep.memory.werk && creep.carry.energy == 0) {
             creep.memory.werk = false;
 	    }
-	    if(!creep.memory.werk && (creep.carry.energy == creep.carryCapacity || (drops.length == 0 && !speicher))) {
+	    if(!creep.memory.werk && (_.sum(creep.carry) == creep.carryCapacity || (drops.length == 0 && !speicher))) {
 	        creep.memory.werk = true;
 	    }
         
