@@ -4,6 +4,7 @@ var roleBuilder = {
     run: function(creep,noLimits) {
         let speicher = creep.home.storage;
         let homedex = Memory.claim.findIndex(claim => claim.room === creep.memory.home);
+        let spawn = Game.getObjectById(Memory.claim[homedex].spawns[0]);
         let sites = noLimits[homedex].sites;
         let siteroom = noLimits[homedex].siteroom;
         let index = Memory.claim.findIndex(claim => claim.room === siteroom)
@@ -11,8 +12,8 @@ var roleBuilder = {
     // Self destruct if no job.
         if(!sites.length){
             creep.say('bye...')
-            if(Game.spawns.tuis.recycleCreep(creep) == ERR_NOT_IN_RANGE){
-                creep.moveTo(Game.spawns.tuis);
+            if(spawn.recycleCreep(creep) == ERR_NOT_IN_RANGE){
+                creep.moveTo(spawn);
             }
             
         }
@@ -46,7 +47,7 @@ var roleBuilder = {
         else if(Memory.claim[index].rank == 0 && creep.room.name !== creep.home.name){
             var drops = creep.pos.findClosestByRange(FIND_DROPPED_RESOURCES);
             if(!drops){
-                creep.moveTo(Game.spawns.tuis)
+                creep.moveTo(spawn)
             }
             else if(creep.pickup(drops)== ERR_NOT_IN_RANGE){
                 creep.moveTo(drops)
@@ -59,9 +60,9 @@ var roleBuilder = {
             else{
                 creep.moveTo(speicher);
             }
-        }else if(Game.spawns.tuis.room.energyAvailable == Game.spawns.tuis.room.energyCapacityAvailable){
-                creep.withdraw(Game.spawns.tuis,RESOURCE_ENERGY);
-                creep.moveTo(Game.spawns.tuis);
+        }else if(creep.home.energyAvailable == creep.home.energyCapacityAvailable){
+                creep.withdraw(spawn,RESOURCE_ENERGY);
+                creep.moveTo(spawn);
         }
 	}
 };

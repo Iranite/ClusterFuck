@@ -29,7 +29,7 @@ Object.defineProperty(Creep.prototype, 'home', {
 
 module.exports.loop = function () {
     
-    var sim = Game.spawns.tuis.room.name === 'sim' ? true : false;
+    var sim = Object.keys(Game.rooms)[0] === 'sim' ? true : false;
 
     
 
@@ -41,7 +41,7 @@ module.exports.loop = function () {
     
     
     
-// initialize. this only runs once at the start of a lifetime of a Game. Remember to call your first spawn "tuis" *g* 
+// initialize. this only runs once at the start of a lifetime of a Game. 
     if(!Memory.energie){
         sim ? console.log('sim') : console.log('no sim');
         Memory.init = {}; //make misc. Object
@@ -53,7 +53,7 @@ module.exports.loop = function () {
         Memory.init.number = 0; // count spawned creeps.
         Memory.init.roads = false; // there are no roads to begin with ;-)
         Memory.paving = {}; // Object to control road maintenence
-        Memory.paving.raum = [Game.spawns.tuis.room.name];
+        Memory.paving.raum = [Object.keys(Game.rooms)[0]];
         Memory.paving.roads = [];
         Memory.energie = {}; // Energy gathering management
         Memory.energie.quelle = []; //source Ids
@@ -66,23 +66,23 @@ module.exports.loop = function () {
         Memory.energie.conti = [];
         Memory.claim = [];
         Memory.claim[0]= {};
-        Memory.claim[0].id=Game.spawns.tuis.room.controller.id;
-        Memory.claim[0].room = Game.spawns.tuis.room.name;
-        Memory.claim[0].spawns= [Game.spawns.tuis.id];
+        Memory.claim[0].id=Game.rooms[Object.keys(Game.rooms)[0]].controller.id;
+        Memory.claim[0].room = Object.keys(Game.rooms)[0];
+        Memory.claim[0].spawns= _.filter(Game.spawns, (spawn) => spawn.room.name == Memory.claim[n].room)[0];
         Memory.claim[0].hostile = 0;
         Memory.claim[0].rank = 1.5; //starter
-        let sources = Game.spawns.tuis.room.find(FIND_SOURCES);
+        let sources = Game.rooms[Memory.claim[0].room].find(FIND_SOURCES);
         Memory.energie.maxCarriers = sources.length;
         for (let n=0;n<sources.length;n++){
             Memory.energie.ordered[n]=0
             Memory.energie.quelle[n]=sources[n].id;
             Memory.energie.raum[n]=sources[n].room.name;
-            if(sim){Memory.energie.distance[n] = Game.spawns.tuis.room.findPath(Game.spawns.tuis.pos,sources[n].pos,{range: 1}).length;}
-            else{Memory.energie.distance[n] = PathFinder.search(Game.spawns.tuis.pos,sources[n],{range: 1}).path.length;};
+            if(sim){Memory.energie.distance[n] = Game.rooms[Memory.claim[0].room].findPath(Game.getObjectById(Memory.claim[0].spawns[0]).pos,sources[n].pos,{range: 1}).length;}
+            else{Memory.energie.distance[n] = PathFinder.search(Game.getObjectById(Memory.claim[0].spawns[0]).pos,sources[n],{range: 1}).path.length;};
             console.log('energy source found: ' + n);
         }
     }
-    if(!sim&&Game.spawns.tuis.room.storage){new RoomVisual('E47S39').text(Math.round(Game.spawns.tuis.room.storage.store.energy/1000)+'k |'+Memory.energie.waiting.map(e => e-Memory.energie.ordered[Memory.energie.waiting.indexOf(e)])+'| rare: '+(Memory.init.intense-Game.time), 19, 26,{align: 'left'});}
+    if(!sim&&Game.rooms[Memory.claim[0].room].storage){new RoomVisual('E47S39').text(Math.round(Game.rooms[Memory.claim[0].room].storage.store.energy/1000)+'k |'+Memory.energie.waiting.map(e => e-Memory.energie.ordered[Memory.energie.waiting.indexOf(e)])+'| rare: '+(Memory.init.intense-Game.time), 19, 26,{align: 'left'});}
     
     if (Memory.init.CPU && !Memory.init.cpuAvg.length){
         Memory.init.cpuAvg = [];
@@ -102,7 +102,7 @@ module.exports.loop = function () {
         //console.log('rare');
         
     // we must know our energy limit
-        Memory.init.extis = Game.spawns.tuis.room.energyCapacityAvailable;
+        Memory.init.extis = Game.rooms[Memory.claim[0].room].energyCapacityAvailable;
         
         
         
@@ -115,11 +115,13 @@ module.exports.loop = function () {
             Memory.claim[n].spawns[m]=spwns[m].id;
         }
         //change rank if eligible
-        if(Memory.claim[n].rank < 2 && Game.rooms[Memory.claim[n].room].storage){
-            Memory.claim[n].rank = 2;
-        }
-        else if(Memory.claim[n].rank == 0 && Memory.claim[n].spawns.length > 0){
+        if(Memory.claim[n].rank == 0 && Memory.claim[n].spawns.length > 0){
             Memory.claim[n].rank = 1;
+        }
+        else if(Memory.claim[n].rank < 2 && Game.rooms[Memory.claim[n].room]){
+            if(Game.rooms[Memory.claim[n].room].storage){
+                Memory.claim[n].rank = 2;
+            }
         }
         // Set territorium of a room, to a depth of 2, only claimed lower ranked rooms.
         if(!sim){
@@ -142,7 +144,7 @@ module.exports.loop = function () {
             }
             Memory.claim[n].territory = Territorium; 
         }else if(sim){Memory.claim[n].territory = [];}
-        // find links
+        // find and build stuff
         let spawn = spwns[0];
         if(spawn){
             let linkA = _.filter(Game.rooms[Memory.claim[n].room].lookForAt(LOOK_STRUCTURES,spawn.pos.x,spawn.pos.y-3),{'structureType':'link'})[0];
@@ -150,6 +152,13 @@ module.exports.loop = function () {
             let ctrl = Game.rooms[Memory.claim[n].room].controller.pos;
             let linkB = _.filter(Game.rooms[Memory.claim[n].room].lookForAtArea(LOOK_STRUCTURES,ctrl.y-4,ctrl.x-4,ctrl.y+4,ctrl.x+4,{asArray: true}),{'structure':{'structureType':'link'}})[0];
             if(linkB){Memory.claim[n].linkB = linkB.structure.id;}
+            //build stuff
+            if(Game.rooms[Memory.claim[n].room].controller.level >=4 && !Game.rooms[Memory.claim[n].room].storage){
+                Game.rooms[Memory.claim[n].room].createConstructionSite(spawn.pos.x,spawn.pos.y+3,STRUCTURE_STORAGE);
+            }
+            if(Game.rooms[Memory.claim[n].room].controller.level >=5 && !linkA){
+                Game.rooms[Memory.claim[n].room].createConstructionSite(spawn.pos.x,spawn.pos.y-3,STRUCTURE_LINK);
+            }
         }
     }
         
@@ -157,7 +166,7 @@ module.exports.loop = function () {
 
         
     // Find defense to repair
-        let defenses = Game.spawns.tuis.room.find(FIND_STRUCTURES, {
+        let defenses = Game.rooms[Memory.claim[0].room].find(FIND_STRUCTURES, {
                         filter: (structure) => {
                         return (structure.structureType == STRUCTURE_WALL ||
                                 structure.structureType == STRUCTURE_RAMPART) &&
@@ -199,9 +208,9 @@ module.exports.loop = function () {
         else{Memory.energie.maxCarries = Math.min(25,Math.floor((Memory.init.extis-300)/50/2)+3);}  // no roads
         
         //this amount of Carriers are going to be built ... always.
-        Memory.energie.maxCarriers = Math.ceil(_.sum(Memory.energie.distance)*2*Memory.init.WORKs*2/50/Memory.energie.maxCarries);
+        Memory.energie.maxCarriers = Math.ceil(_.sum(Memory.energie.distance)*2.2*Memory.init.WORKs*2/50/Memory.energie.maxCarries);
         //each carrier will have this many CARRY parts.
-        Memory.energie.isCarries = Math.min(Math.ceil(_.sum(Memory.energie.distance)*2*Memory.init.WORKs*2/50/Memory.energie.maxCarriers),Memory.energie.maxCarries);
+        Memory.energie.isCarries = Math.min(Math.ceil(_.sum(Memory.energie.distance)*2.2*Memory.init.WORKs*2/50/Memory.energie.maxCarriers),Memory.energie.maxCarries);
 
 
     //Gather Energy source Information to manage and oversee Carrier jobs
@@ -296,7 +305,7 @@ module.exports.loop = function () {
     var linkA = Game.getObjectById(Memory.claim[roomdex].linkA);
     var linkB = Game.getObjectById(Memory.claim[roomdex].linkB);
     limits.drops = spawn.pos.findInRange(FIND_DROPPED_RESOURCES,7);
-    if(!sim&&noLimits[1]){noLimits[1].drops = Game.spawns.daar.pos.findInRange(FIND_DROPPED_RESOURCES,7);} //temp
+    if(!sim&&noLimits[1]){noLimits[1].drops = Game.getObjectById(Memory.claim[1].spawns[0]).pos.findInRange(FIND_DROPPED_RESOURCES,7);} //temp
     // Extended Tutorial tower behavior FIND_MY_CREEPS
     let towers = spawn.room.find(FIND_STRUCTURES,{filter:s=>s.structureType == STRUCTURE_TOWER});
     let towergy= false;
@@ -319,6 +328,11 @@ module.exports.loop = function () {
     if(linkA&&linkB){
         var linkgy = linkA.energy<linkA.energyCapacity;
         if(linkB.energy < 766&&Game.time%4 == 1){linkA.transferEnergy(linkB);}
+    }
+    else if(linkA && !linkB){
+        let ctrl = Game.rooms[Memory.claim[roomdex].room].controller.pos;
+        new RoomVisual(Memory.claim[roomdex].room).text('Build Link!',ctrl.x,ctrl.y+1);
+        new RoomVisual(Memory.claim[roomdex].room).rect(ctrl.x-4,ctrl.y-4,8,8,{fill: 'transparent', stroke: '#fff'});
     }
     else{var linkgy = false;}
     // find energy structures needing energy
@@ -350,8 +364,6 @@ module.exports.loop = function () {
         }
     }
     if(!limits.sites.length){limits.sites = Game.rooms[raum].find(FIND_CONSTRUCTION_SITES); limits.siteroom = raum}
-    //calling the automatic base building function, only if no manual labor was issued. Does not rebuild very well...
-    if(limits.sites.length==0){conspa.buildExtis(extis);}
     // Alarming all the Bummis
     Memory.init.Alarm = Math.max(...Memory.claim.map(claim => claim.hostile));
     Memory.init.AlarmRoom = Memory.init.Alarm ?  Memory.claim[Memory.claim.findIndex(claim => claim.hostile === Memory.init.Alarm )].room : false;
@@ -402,7 +414,7 @@ module.exports.loop = function () {
 // temporary  code for second room
  
     if(!upgraders[1].length&&!sim&&noLimits[1]){
-            Game.spawns.daar.spawnCreep([WORK,CARRY,MOVE], 'Untgrad ' + conspa.morsch(), {memory: {role: 'upgrader', home: Game.spawns.daar.room.name}}); 
+        Game.getObjectById(Memory.claim[1].spawns[0]).spawnCreep([WORK,CARRY,MOVE], 'Untgrad ' + conspa.morsch(), {memory: {role: 'upgrader', home: Game.rooms[Memory.claim[1].room].name}}); 
     }
 
 
@@ -494,7 +506,7 @@ module.exports.loop = function () {
         spawn.spawnCreep(conspa.spwnCar(20,true), conspa.morsch(), {memory: {role: 'distributor', home: raum}});
     }
     else if(bummis[roomdex].length < 1&& (extis-300)/50 > 4&&!sim&&noLimits[1]){                   //1Guarding Bummi
-        spawn.spawnCreep(conspa.spwnBum(extis), conspa.morsch(), {memory: {role: 'bummi', raum: Game.spawns.daar.room.name, home: raum}});
+        spawn.spawnCreep(conspa.spwnBum(extis), conspa.morsch(), {memory: {role: 'bummi', raum: Game.rooms[Memory.claim[1].room].name, home: raum}});
     }
     else if(((distributors[roomdex].length < 1 && extis > 300) || (distributors[roomdex].length < 1 && harvesters[roomdex].length == Memory.energie.quelle.length))){
         spawn.spawnCreep(conspa.spwnCar(Math.min(Math.floor((extis-300)/50*2/3)+3,32),true), conspa.morsch(), {memory: {role: 'distributor', home: raum}});
@@ -514,14 +526,14 @@ module.exports.loop = function () {
     }
     else if((carriers[roomdex].length < Math.min(Memory.energie.maxCarriers,harvesters[roomdex].length)) ||
             (carriers[roomdex].length < Memory.energie.maxCarriers && harvesters[roomdex].length == Memory.energie.quelle.length)) {
-        if(Game.spawns.tuis.room.energyAvailable < 1500&&Game.spawns.tuis.room.energyAvailable>299&&false){
-            spawn.spawnCreep(conspa.spwnCar(Math.floor(Game.spawns.tuis.room.energyAvailable/50*2),false), conspa.morsch(), {memory: {role: 'carrier', home: raum}});       
+        if(Game.rooms[Memory.claim[roomdex].room].energyAvailable < 1500&&Game.rooms[Memory.claim[roomdex].room].energyAvailable>299&&false){
+            spawn.spawnCreep(conspa.spwnCar(Math.floor(Game.rooms[Memory.claim[roomdex].room].energyAvailable/50*2),false), conspa.morsch(), {memory: {role: 'carrier', home: raum}});       
         }
         else{
             spawn.spawnCreep(conspa.spwnCar(Memory.energie.isCarries,Memory.init.roads), conspa.morsch(), {memory: {role: 'carrier', home: raum}});       
         }
     }
-    else if(upgraders[roomdex].length < limits.maxUpgraders && Game.spawns.tuis.room.controller.level<8&&!needclaim) {
+    else if(upgraders[roomdex].length < limits.maxUpgraders && Game.rooms[Memory.claim[roomdex].room].controller.level<8&&!needclaim) {
         spawn.spawnCreep(conspa.spwnUpg(extis), 'Untgrad '+conspa.morsch(), {memory: {role: 'upgrader', home: raum}});
     }
     

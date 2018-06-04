@@ -10,16 +10,5 @@
 
 module.exports = {
     
-    
-    
-    switch(rank){
-        // starter
-        case -1:{
-            
-        }
-    // remote
-        case 0:
-        case 1:
-    }
 
 };
