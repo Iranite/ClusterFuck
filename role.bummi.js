@@ -16,6 +16,7 @@ var roleBummi = {
         if (creep.room.name === raum){
             if(!enemy){
                 creep.moveTo(5+Math.floor(Math.random()*40),5+Math.floor(Math.random()*40));
+                if(creep.hits<creep.hitsMax){creep.heal(creep);}
             }
             else if(creep.pos.isNearTo(enemy)){
                 creep.rangedAttack(enemy);

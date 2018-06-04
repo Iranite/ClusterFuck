@@ -132,13 +132,13 @@ module.exports.loop = function () {
                 let Eins = nachEins[String(k)]
                 let einsIndex = Memory.claim.findIndex(c=>c.room === Eins)
                 if(einsIndex > -1){
-                if(Eins&&Memory.claim[einsIndex].rank < rankEins){
+                if(Eins&&Memory.claim[einsIndex].rank <= rankEins){
                     Territorium.push(Eins);
                     let nachZwei = Game.map.describeExits(Eins);
                     for(let m = 1; m < 9;m+=2){
                         let Zwei = nachZwei[String(m)];
                         let zweiIndex = Memory.claim.findIndex(c=>c.room === Zwei);
-                        zweiIndex > -1 ? (Zwei && Memory.claim[zweiIndex].rank < Memory.claim[einsIndex].rank)?Territorium.push(Zwei):'':'';
+                        zweiIndex > -1 ? (Zwei && Memory.claim[zweiIndex].rank <= Memory.claim[einsIndex].rank)?Territorium.push(Zwei):'':'';
                     }
                 }}
             }
