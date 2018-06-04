@@ -2,11 +2,15 @@ var roleBummi = {
 
     /** @param {Creep} creep **/
     run: function(creep) {
-        var enemy = creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
-        var raum = Memory.init.AlarmRoom
-        let spawn = Game.getObjectById(Memory.claim[Memory.claim.findIndex(claim => claim.room === creep.memory.home)].spawns[0]);
+        let enemy = creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
+        let homedex = Memory.claim.findIndex(claim => claim.room === creep.memory.home)
+        let raum = Memory.claim[homedex].AlarmRoom
+        let spawn = Game.getObjectById(Memory.claim[homedex].spawns[0]);
         if(!raum){
-            var raum = creep.memory.raum;
+            raum = creep.memory.raum;
+        }
+        if(Memory.claim[homedex].Alarm){
+            creep.say('Xterminate',true);
         }
         if(creep.hits<creep.hitsMax*3/10){creep.heal(creep);}
         if (creep.room.name === raum){

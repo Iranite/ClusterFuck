@@ -68,7 +68,7 @@ module.exports.loop = function () {
         Memory.claim[0]= {};
         Memory.claim[0].id=Game.rooms[Object.keys(Game.rooms)[0]].controller.id;
         Memory.claim[0].room = Object.keys(Game.rooms)[0];
-        Memory.claim[0].spawns= _.filter(Game.spawns, (spawn) => spawn.room.name == Memory.claim[n].room)[0];
+        Memory.claim[0].spawns= [_.filter(Game.spawns, (spawn) => spawn.room.name == Memory.claim[0].room)[0].id];
         Memory.claim[0].hostile = 0;
         Memory.claim[0].rank = 1.5; //starter
         let sources = Game.rooms[Memory.claim[0].room].find(FIND_SOURCES);
@@ -365,8 +365,8 @@ module.exports.loop = function () {
     }
     if(!limits.sites.length){limits.sites = Game.rooms[raum].find(FIND_CONSTRUCTION_SITES); limits.siteroom = raum}
     // Alarming all the Bummis
-    Memory.init.Alarm = Math.max(...Memory.claim.map(claim => claim.hostile));
-    Memory.init.AlarmRoom = Memory.init.Alarm ?  Memory.claim[Memory.claim.findIndex(claim => claim.hostile === Memory.init.Alarm )].room : false;
+    Memory.claim[roomdex].Alarm = Math.max(...Memory.claim.map(claim => claim.hostile));
+    Memory.claim[roomdex].AlarmRoom = Memory.claim[roomdex].Alarm ?  Memory.claim[Memory.claim.findIndex(claim => claim.hostile === Memory.claim[roomdex].Alarm )].room : false;
     
     
     
@@ -445,7 +445,7 @@ module.exports.loop = function () {
 
 //Spawning all the creeps
     var needclaim = false;
-    if ((extis-300)/50 > 19&&!Memory.init.Alarm&&distributors[roomdex].length){
+    if ((extis-300)/50 > 19&&!Memory.claim[roomdex].Alarm&&distributors[roomdex].length){
         for (let n=0;n < Memory.claim.length;n++){
                 let sourceId = Memory.claim[n].id;
             var claim = false;
@@ -538,8 +538,8 @@ module.exports.loop = function () {
     }
     
 // Spawning Bummis before everything else during alarm    
-    if(Memory.init.Alarm && bummis[roomdex].length < Memory.init.Alarm){
-        spawn.spawnCreep(conspa.spwnBum(extis), conspa.morsch(), {memory: {role: 'bummi', raum: Memory.init.AlarmRoom, home: raum}});
+    if(Memory.claim[roomdex].Alarm && bummis[roomdex].length < Memory.claim[roomdex].Alarm){
+        spawn.spawnCreep(conspa.spwnBum(extis), conspa.morsch(), {memory: {role: 'bummi', raum: Memory.claim[roomdex].AlarmRoom, home: raum}});
     }
     
     
@@ -575,7 +575,7 @@ module.exports.loop = function () {
             roleUpgrader.run(creep,noLimits);
             if(Memory.init.CPU){cpuUpg+=Game.cpu.getUsed()-CPU}
         }
-        else if(creep.memory.role == 'builder'||(creep.memory.role == 'repairer')) {
+        else if(creep.memory.role == 'builder') {
             roleBuilder.run(creep,noLimits);
             if(Memory.init.CPU){cpuBui+=Game.cpu.getUsed()-CPU}
         }
@@ -592,9 +592,6 @@ module.exports.loop = function () {
             if(Memory.init.CPU){cpuDis+=Game.cpu.getUsed()-CPU}
         }
         else if(creep.memory.role == 'bummi'){
-            if(Memory.init.Alarm){
-                creep.say('Xterminate',true);
-            }
             roleBummi.run(creep);
         }
         else if(creep.memory.role == 'repairer'){

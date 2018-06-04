@@ -40,7 +40,7 @@ var roleUpgrader = {
                 creep.moveTo(Game.getObjectById(Memory.claim[homedex].linkB));
             }
         }
-        else if(creep.home.storage){
+        else if(creep.home.storage && home !== 'daar'){
             if(creep.pos.isNearTo(creep.home.storage)){
                 creep.withdraw(creep.home.storage,RESOURCE_ENERGY);
             }

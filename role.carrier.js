@@ -34,10 +34,10 @@ var roleCarrier = {
         }
         else if(creep.memory.job && creep.memory.travel) {
             // panic reaction
-            if(raum === Memory.init.AlarmRoom && raum!==creep.memory.home){
+            if(raum === Memory.claim[homedex].AlarmRoom && raum!==creep.memory.home){
                 creep.moveTo(creep.home.controller);
                 creep.say('Yikes!!!',true);
-                if(creep.room.name != Memory.init.AlarmRoom){
+                if(creep.room.name != Memory.claim[homedex].AlarmRoom){
                  creep.memory.travel = false;
                  Memory.energie.ordered[index] -= volume;
                 }
@@ -173,7 +173,7 @@ var roleCarrier = {
             }
             else{
                 let j = jobs.indexOf(Math.max(...jobs));
-                if (Memory.energie.waiting[j] > 0 && Memory.energie.raum !== Memory.init.AlarmRoom){
+                if (Memory.energie.waiting[j] > 0 && Memory.energie.raum !== Memory.claim[homedex].AlarmRoom){
                     creep.say(jobs[j]+' @ '+j);
                     Memory.energie.ordered[j] += volume;
                     creep.memory.job = Memory.energie.quelle[j];

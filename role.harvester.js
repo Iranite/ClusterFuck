@@ -38,7 +38,7 @@ var roleHarvester = {
     // Moving to target room whatsoever :(()
     
         if(creep.carry.energy < creep.carryCapacity||carrier) {
-            if(raum == Memory.init.AlarmRoom&&raum!=creep.memory.home){
+            if(raum == Memory.claim[homedex].AlarmRoom&&raum!=creep.memory.home){
                 creep.moveTo(creep.home.controller);
                 creep.say('Yikes!!!',true);
             }

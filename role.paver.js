@@ -2,7 +2,8 @@ var rolePaver = {
 
     /** @param {Creep} creep **/
     run: function(creep) {
-        let spawn = Game.getObjectById(Memory.claim[Memory.claim.findIndex(claim => claim.room === creep.memory.home)].spawns[0]);
+        let homedex = Memory.claim.findIndex(claim => claim.room === creep.memory.home)
+        let spawn = Game.getObjectById(Memory.claim[homedex].spawns[0]);
         let speicher = creep.home.storage;
         
     // getting rooms and their roads
@@ -40,7 +41,7 @@ var rolePaver = {
     // go working
 	    else if(creep.memory.werk) {
         //panic reaction
-	        if(siteroom == Memory.init.AlarmRoom){
+	        if(siteroom == Memory.claim[homedex].AlarmRoom){
 	            creep.moveTo(creep.home.controller);
 	            creep.say('Yikes!!!',true);
 	        }
