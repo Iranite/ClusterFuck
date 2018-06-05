@@ -9,6 +9,7 @@ var roleCarrier = {
         let volume = creep.carryCapacity;
         var conti = Memory.energie.conti[index];
         var haufen = Memory.energie.haufen[index];
+        var position = obj => new RoomPosition(obj.x, obj.y, obj.roomName);
         let speicher = creep.home.storage;
         let homedex = Memory.claim.findIndex(claim => claim.room === creep.memory.home);
         let spawn = Game.getObjectById(Memory.claim[homedex].spawns[0]);
@@ -78,7 +79,8 @@ var roleCarrier = {
                 }
             }
             else{
-                creep.moveTo(creep.pos.findClosestByPath(creep.room.findExitTo(raum)));
+                //creep.moveTo(creep.pos.findClosestByPath(creep.room.findExitTo(raum)));
+                creep.moveTo(position(Memory.energie.position[index]));
             }
         }
         
