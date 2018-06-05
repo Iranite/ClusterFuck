@@ -291,7 +291,7 @@ module.exports.loop = function () {
     Memory.claim[roomdex].hostile = Game.rooms[raum].find(FIND_HOSTILE_CREEPS).length;
     
     let limits = noLimits[roomdex];
-    //if(rank === 0){break;}
+    //if(rank === 0){continue;}
     let spawn = {};// even var doesn't want to work outside the loop's scope o_0
     for(let m = 0;m<Memory.claim[roomdex].spawns.length;m++){
         spawn = Game.getObjectById(Memory.claim[roomdex].spawns[m])
@@ -455,7 +455,7 @@ module.exports.loop = function () {
             let index = Memory.claim.findIndex(claim => claim.room === Memory.claim[roomdex].territory[n]);
             //check if... rank is 0, parent or parent of parent is this.
             if(Memory.claim[index].rank > 0){
-                break;
+                continue;
             }
             let sourceId = Memory.claim[index].id;
             var claim = false;
