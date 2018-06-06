@@ -3,11 +3,11 @@ var roleBuilder = {
     /** @param {Creep} creep **/
     run: function(creep,noLimits) {
         let speicher = creep.home.storage;
-        let homedex = Memory.claim.findIndex(claim => claim.room === creep.memory.home);
+        let homedex = Memory.rooms[creep.memory.home];
         let spawn = Game.getObjectById(Memory.claim[homedex].spawns[0]);
         let sites = noLimits[homedex].sites;
         let siteroom = noLimits[homedex].siteroom;
-        let index = Memory.claim.findIndex(claim => claim.room === siteroom)
+        let index = Memory.rooms[siteroom];
     
     
         // Determining working condition

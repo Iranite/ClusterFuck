@@ -2,10 +2,10 @@ var roleUpgrader = {
 
     /** @param {Creep} creep **/
     run: function(creep,noLimits) {
-        let spawn = Game.getObjectById(Memory.claim[Memory.claim.findIndex(claim => claim.room === creep.memory.home)].spawns[0]);
         let speicher = creep.home.storage;
-        var homedex = Memory.claim.findIndex(claim => claim.room === creep.memory.home);
-        var home = Game.getObjectById(Memory.claim[homedex].spawns[0]).name
+        var homedex = Memory.rooms[creep.memory.home];
+        let spawn = Game.getObjectById(Memory.claim[homedex].spawns[0]);
+        var temphome = Game.getObjectById(Memory.claim[homedex].spawns[0]).name
         let drops = noLimits[homedex].drops;
 
         
@@ -40,7 +40,7 @@ var roleUpgrader = {
                 creep.moveTo(Game.getObjectById(Memory.claim[homedex].linkB));
             }
         }
-        else if(creep.home.storage && home !== 'daar'){
+        else if(creep.home.storage && temphome !== 'daar'){
             if(creep.pos.isNearTo(creep.home.storage)){
                 creep.withdraw(creep.home.storage,RESOURCE_ENERGY);
             }
@@ -48,7 +48,7 @@ var roleUpgrader = {
                 creep.moveTo(creep.home.storage);
             }
         }
-        else if(spawn.room.energyAvailable == spawn.room.energyCapacityAvailable||home == 'daar'){
+        else if(spawn.room.energyAvailable == spawn.room.energyCapacityAvailable||temphome == 'daar'){
                 creep.withdraw(spawn,RESOURCE_ENERGY);
                 creep.moveTo(spawn);
         }

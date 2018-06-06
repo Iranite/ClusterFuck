@@ -3,7 +3,7 @@ var roleBummi = {
     /** @param {Creep} creep **/
     run: function(creep) {
         let enemy = creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
-        let homedex = Memory.claim.findIndex(claim => claim.room === creep.memory.home)
+        let homedex = Memory.rooms[creep.memory.home];
         let raum = Memory.claim[homedex].AlarmRoom
         let spawn = Game.getObjectById(Memory.claim[homedex].spawns[0]);
         if(!raum){

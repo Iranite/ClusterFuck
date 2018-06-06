@@ -108,6 +108,8 @@ module.exports.loop = function () {
         
     // loop CLAIM for room updates!
     for(let n = 0;n < Memory.claim.length;n++){
+        //make roomdex object
+        Memory.rooms[Memory.claim[n].room]= n;
         //gather spawns for ALL ranks!
         let spwns = _.filter(Game.spawns, (spawn) => spawn.room.name == Memory.claim[n].room);
         Memory.claim[n].spawns=[];
@@ -125,24 +127,27 @@ module.exports.loop = function () {
             }
         }
 
-        // Set territory of a room, lesser or equal rank for first layer, lesser for the second.
+        // Define territory of a room, lesser or equal rank for first layer, lesser for the second.
         if(!sim){
             let nachEins = Game.map.describeExits(Memory.claim[n].room);
             let rankEins = Memory.claim[n].rank;
             let Territorium = [Memory.claim[n].room];
+            //let Energy = Game.rooms[Memory.claim[n].room].find(FIND_SOURCES).map(s => s.id)
             for(let k = 1; k < 9;k+=2){
                 let Eins = nachEins[String(k)]
-                let einsIndex = Memory.claim.findIndex(c=>c.room === Eins)
+                let einsIndex = Memory.rooms[Eins];
                 if(einsIndex > -1){
-                if(Eins&&Memory.claim[einsIndex].rank <= rankEins){
-                    Territorium.push(Eins);
-                    let nachZwei = Game.map.describeExits(Eins);
-                    for(let m = 1; m < 9;m+=2){
-                        let Zwei = nachZwei[String(m)];
-                        let zweiIndex = Memory.claim.findIndex(c=>c.room === Zwei);
-                        zweiIndex > -1 ? (Zwei && Memory.claim[zweiIndex].rank < Memory.claim[einsIndex].rank)?Territorium.push(Zwei):'':'';
+                    if(Eins&&Memory.claim[einsIndex].rank <= rankEins){
+                        Territorium.push(Eins);
+                        //if(Memory.claim[einsIndex].rank < rankEins){}
+                        let nachZwei = Game.map.describeExits(Eins);
+                        for(let m = 1; m < 9;m+=2){
+                            let Zwei = nachZwei[String(m)];
+                            let zweiIndex = Memory.rooms[Zwei];
+                            zweiIndex > -1 ? (Zwei && Memory.claim[zweiIndex].rank < Memory.claim[einsIndex].rank)?Territorium.push(Zwei):'':'';
+                        }
                     }
-                }}
+                }
             }
             Memory.claim[n].territory = Territorium; 
         }else if(sim){Memory.claim[n].territory = [];}
@@ -363,7 +368,7 @@ module.exports.loop = function () {
                 limits.sites=bites;
                 limits.siteroom = room;
             }
-            let index = Memory.claim.findIndex((claim) => claim.room === room)
+            let index = Memory.rooms[room];
             Memory.claim[index].hostile = Game.rooms[room].find(FIND_HOSTILE_CREEPS).length;
         }
     }
@@ -452,7 +457,7 @@ module.exports.loop = function () {
     let needclaim = false; // don't build upgraders, if we need claimers.
     if (extis >= 1300 && !Memory.claim[roomdex].Alarm && distributors[roomdex].length && Memory.claim[roomdex].rank == 2 && rare){
         for (let n=0;n < Memory.claim[roomdex].territory.length;n++){
-            let index = Memory.claim.findIndex(claim => claim.room === Memory.claim[roomdex].territory[n]);
+            let index = Memory.rooms[Memory.claim[roomdex].territory[n]];
             //check if... rank is 0, parent or parent of parent is this.
             if(Memory.claim[index].rank > 0){
                 continue;

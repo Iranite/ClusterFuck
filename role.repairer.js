@@ -2,7 +2,7 @@ var roleRepairer = {
 
     /** @param {Creep} creep **/
     run: function(creep,defenses) {
-        let spawn = Game.getObjectById(Memory.claim[Memory.claim.findIndex(claim => claim.room === creep.memory.home)].spawns[0]);
+        let spawn = Game.getObjectById(Memory.claim[Memory.rooms[creep.memory.home]].spawns[0]);
         let speicher = creep.home.storage;
 	    if(creep.memory.werk && creep.carry.energy == 0) {
             creep.memory.werk = false;

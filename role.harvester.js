@@ -6,7 +6,7 @@ var roleHarvester = {
         var source = Game.getObjectById(creep.memory.sourceId);
         var index = Memory.energie.quelle.indexOf(creep.memory.sourceId);
         var raum = Memory.energie.raum[index];
-        let homedex = Memory.claim.findIndex(claim => claim.room === creep.memory.home)
+        let homedex = Memory.rooms[creep.memory.home];
         let spawn = Game.getObjectById(Memory.claim[homedex].spawns[0]);
         if(Memory.energie.position[index]){var dest = Memory.energie.position[index];}
         //else{var dest = source;}

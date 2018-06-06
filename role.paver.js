@@ -2,7 +2,7 @@ var rolePaver = {
 
     /** @param {Creep} creep **/
     run: function(creep) {
-        let homedex = Memory.claim.findIndex(claim => claim.room === creep.memory.home)
+        let homedex = Memory.rooms[creep.memory.home];
         let spawn = Game.getObjectById(Memory.claim[homedex].spawns[0]);
         let speicher = creep.home.storage;
         
