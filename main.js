@@ -100,6 +100,8 @@ module.exports.loop = function () {
         Memory.init.intense = Math.ceil(Game.time+Math.random()*10)+3
         var rare = true;
         //console.log('rare');
+        Memory.init.x = Memory.init.x ? false : 5+Math.floor((Math.random()+Math.random()+Math.random())*40/3);
+        Memory.init.y = Memory.init.y ? false : 5+Math.floor((Math.random()+Math.random()+Math.random())*40/3);
         
     // we must know our energy limit
         Memory.init.extis = Game.rooms[Memory.claim[0].room].energyCapacityAvailable;
