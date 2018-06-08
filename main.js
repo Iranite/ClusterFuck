@@ -37,7 +37,7 @@ module.exports.loop = function () {
             return room
         }
         else{
-            return Memory.claim[Memory.rooms[Memory.claim[index].parent]].rank > 1 ? Memory.rooms[Memory.claim[index].parent] : Memory.claim[Memory.rooms[Memory.claim[index].parent]].parent;
+            return Memory.claim[Memory.rooms[Memory.claim[index].parent]].rank > 1 ? Memory.claim[index].parent : Memory.claim[Memory.rooms[Memory.claim[index].parent]].parent;
         }
     }
 
@@ -233,7 +233,7 @@ module.exports.loop = function () {
         //each carrier will have this many CARRY parts.
         Memory.energie.isCarries = Math.min(Math.ceil(_.sum(Memory.energie.distance)*2.2*Memory.init.WORKs*2/50/Memory.energie.maxCarriers),Memory.energie.maxCarries);
 
-
+        Memory.claim[1].rank = 1 //temp
     //Gather Energy source Information to manage and oversee Carrier jobs
         for(let n = 0; n < Memory.energie.quelle.length;n++){
             // set governing room of energy source
@@ -397,7 +397,10 @@ module.exports.loop = function () {
     
     
    // maximum amount of upgraders. Always 1 upgrader and a builder? if construction is a thing and storage isn't.
-    if(Game.rooms[raum].storage){
+    if(Game.rooms[raum].controller.level === 8){
+        limits.maxUpgraders = 1;
+    }
+    else if(Game.rooms[raum].storage){
         let divider = Game.rooms[raum].controller.level*Game.rooms[raum].energyCapacityAvailable;
         limits.maxUpgraders = Math.max(Math.floor(Game.rooms[raum].storage.store.energy/divider), 1);
     }
@@ -471,7 +474,6 @@ module.exports.loop = function () {
 
     //Spawning all the creeps
     //Spawn Claimers
-    Memory.claim[1].rank = 1 //temp
     let needclaim = false; // don't build upgraders, if we need claimers.
     if (extis >= 1300 && !Memory.claim[roomdex].Alarm && distributors[roomdex].length && Memory.claim[roomdex].rank > 1 && rare){
         for (let n=0;n < Memory.claim[roomdex].territory.length;n++){
@@ -499,19 +501,17 @@ module.exports.loop = function () {
         }
     }
     //Spawn Harvesters
-    if(harvesters[roomdex].length&&harvesters[roomdex].length < Memory.energie.quelle.length){
+    if(!limits.maxHarvesters||rare){
+        limits.maxHarvesters = _.filter(Memory.energie.gov, quelle => quelle === raum).length;
+    }
+    if(harvesters[roomdex].length&&harvesters[roomdex].length < limits.maxHarvesters){
         // using the numbers to spawn "oldest source" first
         for (let n = 0; n < Memory.energie.quelle.length; n++){
+            //ignore sources not belonging to this room.
+            if(Memory.energie.gov[n] !== raum){continue;}
             let sourceId = Memory.energie.quelle[n];
             if (!_.some(Game.creeps, c => c.memory.role == 'harvester' && c.memory.sourceId == sourceId)){
-                // this limits unowned rooms to small harvesters
-                if(spawn.room.energyAvailable < 700&&carriers[roomdex].length < Memory.energie.maxCarriers/2&&false){
-                    var Extis = 300
-                }
-                else{
-                    var Extis = extis;
-                }
-                spawn.spawnCreep(conspa.spwnHar(Extis), conspa.morsch(), {memory: {role: 'harvester', sourceId: sourceId, home: raum}});
+                spawn.spawnCreep(conspa.spwnHar(extis), conspa.morsch(), {memory: {role: 'harvester', sourceId: sourceId, home: raum}});
                 break;
             }
         }

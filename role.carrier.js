@@ -132,8 +132,10 @@ var roleCarrier = {
         }
     // Get a job
         if(!creep.memory.job){
-            let jobs = []
+            let jobs = [];
             for(let n = 0; n < Memory.energie.waiting.length;n++){
+                // does this energy belong to this creeps response rooms?
+                if(Memory.energie.gov[n]!==creep.memory.home){continue;}
                 if(Game.rooms[Memory.energie.raum[n]]){
                     Memory.energie.waiting[n] = 0;
                     if(Memory.energie.conti[n]){
@@ -153,7 +155,9 @@ var roleCarrier = {
                         Memory.energie.haufen[n] = 0;
                     }
                 } 
-                jobs.push(Memory.energie.waiting[n] + Memory.energie.distance[n]*Memory.init.WORKs-Memory.energie.ordered[n]);
+                jobs[n] = (Memory.energie.waiting[n] + Memory.energie.distance[n]*Memory.init.WORKs-Memory.energie.ordered[n]);
+                // no job in infested room
+                if(Memory.claim[Memory.rooms[Memory.energie.raum[n]]].hostile){jobs[n] = 0;}
                 /* if it fits it sits
                 if(jobs[n] > volume && Memory.energie.waiting[n] > 0){
                     // life is too short
@@ -175,7 +179,7 @@ var roleCarrier = {
             }
             else{
                 let j = jobs.indexOf(Math.max(...jobs));
-                if (Memory.energie.waiting[j] > 0 && !Memory.claim[Memory.rooms[Memory.energie.raum[j]]].Alarm){
+                if (Memory.energie.waiting[j] > 0){
                     creep.say(jobs[j]+' @ '+j);
                     Memory.energie.ordered[j] += volume;
                     creep.memory.job = Memory.energie.quelle[j];
