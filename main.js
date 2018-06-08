@@ -28,8 +28,18 @@ Object.defineProperty(Creep.prototype, 'home', {
 
 
 module.exports.loop = function () {
-    
+    //set Training variable.
     var sim = Object.keys(Game.rooms)[0] === 'sim' ? true : false;
+    //function to find out who governs a current room.
+    var gov = room => {
+        let index = Memory.rooms[room];
+        if(Memory.claim[index].rank>1){
+            return room
+        }
+        else{
+            return Memory.claim[Memory.rooms[Memory.claim[index].parent]].rank > 1 ? Memory.rooms[Memory.claim[index].parent] : Memory.claim[Memory.rooms[Memory.claim[index].parent]].parent;
+        }
+    }
 
     
 
@@ -64,6 +74,7 @@ module.exports.loop = function () {
         Memory.energie.ordered = [];
         Memory.energie.haufen = [];
         Memory.energie.conti = [];
+        Memory.energie.gov = [];
         Memory.claim = [];
         Memory.claim[0]= {};
         Memory.claim[0].id=Game.rooms[Object.keys(Game.rooms)[0]].controller.id;
@@ -225,7 +236,9 @@ module.exports.loop = function () {
 
     //Gather Energy source Information to manage and oversee Carrier jobs
         for(let n = 0; n < Memory.energie.quelle.length;n++){
-            // check if there are "surplus" orders running, without corresponding carriers existing.
+            // set governing room of energy source
+            Memory.energie.gov[n] = gov(Memory.energie.raum[n]);
+            //++ check if there are "surplus" orders running, without corresponding carriers existing.
             if(Memory.energie.ordered[n]&&!_.filter(Game.creeps, (creep) => (creep.memory.job == Memory.energie.quelle[n] && creep.memory.travel)).length){
                 Memory.energie.ordered[n] = 0;
                 console.log('an order got deleted at '+n);
@@ -234,11 +247,12 @@ module.exports.loop = function () {
             if(Game.rooms[Memory.energie.raum[n]]&&Memory.energie.position[n]){
                 Memory.energie.waiting[n] = 0;
                 
-                //create and monitor container Id
+                //++create and monitor container Id
                 if(!Memory.energie.conti[n]){
                     let conti = _.filter(Game.rooms[Memory.energie.raum[n]].lookForAt(LOOK_STRUCTURES,Memory.energie.position[n].x,Memory.energie.position[n].y),{'structureType':'container'})[0];
                     if(conti){Memory.energie.conti[n] = conti.id;}
                 }
+                //add container energy amount
                 else{Memory.energie.waiting[n] = Game.getObjectById(Memory.energie.conti[n]).store.energy;}
                 
                 //create and monitor dropped energy Id
@@ -257,6 +271,7 @@ module.exports.loop = function () {
                     Memory.energie.haufen[n] = 0;
                 }
             }
+            // delete negative orders.
             if(Memory.energie.ordered[n]<0){Memory.energie.ordered[n] = 0;}
         }
     }
@@ -456,14 +471,14 @@ module.exports.loop = function () {
 
     //Spawning all the creeps
     //Spawn Claimers
+    Memory.claim[1].rank = 1 //temp
     let needclaim = false; // don't build upgraders, if we need claimers.
-    if (extis >= 1300 && !Memory.claim[roomdex].Alarm && distributors[roomdex].length && Memory.claim[roomdex].rank == 2 && rare){
+    if (extis >= 1300 && !Memory.claim[roomdex].Alarm && distributors[roomdex].length && Memory.claim[roomdex].rank > 1 && rare){
         for (let n=0;n < Memory.claim[roomdex].territory.length;n++){
             let index = Memory.rooms[Memory.claim[roomdex].territory[n]];
-            //check if... rank is 0, parent or parent of parent is this.
-            if(Memory.claim[index].rank > 0){
-                continue;
-            }
+            //check if... rank is 0, then if parent or else parent of parent is this.
+            if(Memory.claim[index].rank > 0){continue;}
+            if(gov(Memory.claim[index].room) !== raum){continue;}
             let sourceId = Memory.claim[index].id;
             var claim = false;
             if(Game.rooms[Memory.claim[index].room] && Memory.claim[index].rank === 0){
