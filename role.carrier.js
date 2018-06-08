@@ -175,7 +175,7 @@ var roleCarrier = {
             }
             else{
                 let j = jobs.indexOf(Math.max(...jobs));
-                if (Memory.energie.waiting[j] > 0 && Memory.energie.raum !== Memory.claim[homedex].AlarmRoom){
+                if (Memory.energie.waiting[j] > 0 && !Memory.claim[Memory.rooms[Memory.energie.raum[j]]].Alarm){
                     creep.say(jobs[j]+' @ '+j);
                     Memory.energie.ordered[j] += volume;
                     creep.memory.job = Memory.energie.quelle[j];
