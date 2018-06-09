@@ -82,14 +82,16 @@ module.exports.loop = function () {
         Memory.claim[0].spawns= [_.filter(Game.spawns, (spawn) => spawn.room.name == Memory.claim[0].room)[0].id];
         Memory.claim[0].hostile = 0;
         Memory.claim[0].rank = 1.5; //starter
+        Memory.rooms = {};
         let sources = Game.rooms[Memory.claim[0].room].find(FIND_SOURCES);
-        Memory.energie.maxCarriers = sources.length;
+        Memory.claim[0].maxCarriers = sources.length;
         for (let n=0;n<sources.length;n++){
             Memory.energie.ordered[n]=0
             Memory.energie.quelle[n]=sources[n].id;
             Memory.energie.raum[n]=sources[n].room.name;
+            Memory.energie.gov[n] = Memory.claim[0].room;
             if(sim){Memory.energie.distance[n] = Game.rooms[Memory.claim[0].room].findPath(Game.getObjectById(Memory.claim[0].spawns[0]).pos,sources[n].pos,{range: 1}).length;}
-            else{Memory.energie.distance[n] = PathFinder.search(Game.getObjectById(Memory.claim[0].spawns[0]).pos,sources[n],{range: 1}).path.length;};
+            else{Memory.energie.distance[n] = PathFinder.search(Game.getObjectById(Memory.claim[0].spawns[0]).pos,sources[n],{range: 1}).path.length;}
             console.log('energy source found: ' + n);
         }
     }
@@ -139,20 +141,21 @@ module.exports.loop = function () {
                 Memory.claim[n].rank = 2;
             }
         }
+        
+        // END HERE FOR REMOTE ROOMS and Outposts
+        if(Memory.claim[n].rank <= 1){continue;}
 
         // Define territory of a room, lesser or equal rank for first layer, lesser for the second.
         if(!sim){
             let nachEins = Game.map.describeExits(Memory.claim[n].room);
             let rankEins = Memory.claim[n].rank;
             let Territorium = [Memory.claim[n].room];
-            //let Energy = Game.rooms[Memory.claim[n].room].find(FIND_SOURCES).map(s => s.id)
             for(let k = 1; k < 9;k+=2){
                 let Eins = nachEins[String(k)]
                 let einsIndex = Memory.rooms[Eins];
                 if(einsIndex > -1){
                     if(Eins&&Memory.claim[einsIndex].rank <= rankEins){
                         Territorium.push(Eins);
-                        //if(Memory.claim[einsIndex].rank < rankEins){}
                         let nachZwei = Game.map.describeExits(Eins);
                         for(let m = 1; m < 9;m+=2){
                             let Zwei = nachZwei[String(m)];
@@ -181,12 +184,28 @@ module.exports.loop = function () {
                 Game.rooms[Memory.claim[n].room].createConstructionSite(spawn.pos.x,spawn.pos.y-3,STRUCTURE_LINK);
             }
         }
+
+        // calculate CARRYies/maxCarriers for each source the room has to govern.
+        let roomNRG = Game.rooms[Memory.claim[n].room].energyCapacityAvailable;
+        let WORKs = Math.min(Math.floor((roomNRG-300)/50/5)+2,5)  // the amount of WORK per Harvester. (6 not included, as 5 is maximum harvest possible.)
+        if(Memory.init.roads){Memory.claim[n].maxCarries = Math.min(32,Math.floor((roomNRG)*2/150));} // road vehicles require 'less' parts per volume
+        else{Memory.claim[n].maxCarries = Math.min(25,Math.floor((roomNRG)/100));}  // no roads
+        let distance = 0;
+        for(let m=0;m<Memory.energie.quelle.length;m++){
+            if(Memory.energie.gov[m]===Memory.claim[n].room){
+                distance += Memory.energie.distance[m]
+            }
+        }
+        //this amount of Carriers are going to be built ... always.
+        Memory.claim[n].maxCarriers = Math.ceil(distance*2.2*WORKs*2/50/Memory.claim[n].maxCarries);
+        //each carrier will have this many CARRY parts.
+        Memory.claim[n].isCarries = Math.min(Math.ceil(distance*2.2*WORKs*2/50/Memory.claim[n].maxCarriers),Memory.claim[n].maxCarries);
     }
         
 
 
         
-        // Find defense to repair
+        // Find walls and ramparts to repair
         let defenses = Game.rooms[Memory.claim[0].room].find(FIND_STRUCTURES, {
                         filter: (structure) => {
                         return (structure.structureType == STRUCTURE_WALL ||
@@ -220,24 +239,15 @@ module.exports.loop = function () {
                 console.log('Roads detected. Initialising road maintenance program...')
             }
         }
-        
 
-        
-    // calculate CARRYies/Carrier amount for each source.
-        Memory.init.WORKs = Math.min(Math.floor((Memory.init.extis-300)/50/5)+2,5)  // the amount of WORK per Harvester. (6 not included, as 5 is maximum harvest possible.)
-        if(Memory.init.roads){Memory.energie.maxCarries = Math.min(32,Math.floor((Memory.init.extis-300)/50*2/3)+4);} // road vehicles require 'less' parts per volume
-        else{Memory.energie.maxCarries = Math.min(25,Math.floor((Memory.init.extis-300)/50/2)+3);}  // no roads
-        
-        //this amount of Carriers are going to be built ... always.
-        Memory.energie.maxCarriers = Math.ceil(_.sum(Memory.energie.distance)*2.2*Memory.init.WORKs*2/50/Memory.energie.maxCarries);
-        //each carrier will have this many CARRY parts.
-        Memory.energie.isCarries = Math.min(Math.ceil(_.sum(Memory.energie.distance)*2.2*Memory.init.WORKs*2/50/Memory.energie.maxCarriers),Memory.energie.maxCarries);
-
-        Memory.claim[1].rank = 1 //temp
+        if(Memory.claim[1]){Memory.claim[1].rank = 1} //temp
     //Gather Energy source Information to manage and oversee Carrier jobs
         for(let n = 0; n < Memory.energie.quelle.length;n++){
-            // set governing room of energy source
-            Memory.energie.gov[n] = gov(Memory.energie.raum[n]);
+            // set governing room of energy source and new distances, if governing room changed.
+            if(Memory.energie.gov[n] !== gov(Memory.energie.raum[n])||!Memory.energie.gov[n]){
+                Memory.energie.gov[n] = gov(Memory.energie.raum[n]);
+                Memory.energie.distance[n] = PathFinder.search(Game.getObjectById(Memory.claim[Memory.rooms[Memory.energie.gov[n]]].spawns[0]).pos,Game.getObjectById(Memory.energie.quelle[n]),{range: 1}).path.length;
+            }
             //++ check if there are "surplus" orders running, without corresponding carriers existing.
             if(Memory.energie.ordered[n]&&!_.filter(Game.creeps, (creep) => (creep.memory.job == Memory.energie.quelle[n] && creep.memory.travel)).length){
                 Memory.energie.ordered[n] = 0;
@@ -544,17 +554,17 @@ module.exports.loop = function () {
             (builders[roomdex].length < Math.min(limits.maxBuilders,limits.sites.length) && limits.sites.length && harvesters[roomdex].length == Memory.energie.quelle.length)){
         spawn.spawnCreep(conspa.spwnBui(extis), conspa.morsch(), {memory: {role: 'builder', home: raum}});
     }
-    else if(pavers[roomdex].length < 1&&Memory.paving.current&&(extis-300)/50>20&&carriers[roomdex].length>Memory.energie.maxCarriers/2){ 
+    else if(pavers[roomdex].length < 1&&Memory.paving.current&&(extis-300)/50>20&&carriers[roomdex].length>Memory.claim[roomdex].maxCarriers/2){ 
         spawn.spawnCreep([WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE], conspa.morsch(), {memory: {role: 'paver', home: raum}});
     }
-    else if(pavers[roomdex].length < 1&&Memory.paving.current&&(extis-300)/50>4&&carriers[roomdex].length>Memory.energie.maxCarriers/2){
+    else if(pavers[roomdex].length < 1&&Memory.paving.current&&(extis-300)/50>4&&carriers[roomdex].length>Memory.claim[roomdex].maxCarriers/2){
         spawn.spawnCreep([WORK,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE], conspa.morsch(), {memory: {role: 'paver', home: raum}});
     }
-    else if(repairers[roomdex].length < 1&& Memory.init.defenses.length&&carriers[roomdex].length>Memory.energie.maxCarriers/2){
+    else if(repairers[roomdex].length < 1&& Memory.init.defenses.length&&carriers[roomdex].length>Memory.claim[roomdex].maxCarriers/2){
         spawn.spawnCreep(conspa.spwnBui(extis), conspa.morsch(), {memory: {role: 'repairer', home: raum}});  
     }
-    else if((carriers[roomdex].length < Math.min(Memory.energie.maxCarriers,harvesters[roomdex].length)) ||
-            (carriers[roomdex].length < Memory.energie.maxCarriers && harvesters[roomdex].length == Memory.energie.quelle.length)) {
+    else if((carriers[roomdex].length < Math.min(Memory.claim[roomdex].maxCarriers,harvesters[roomdex].length)) ||
+            (carriers[roomdex].length < Memory.claim[roomdex].maxCarriers && harvesters[roomdex].length == Memory.energie.quelle.length)) {
         if(Game.rooms[Memory.claim[roomdex].room].energyAvailable < 1500&&Game.rooms[Memory.claim[roomdex].room].energyAvailable>299&&false){
             spawn.spawnCreep(conspa.spwnCar(Math.floor(Game.rooms[Memory.claim[roomdex].room].energyAvailable/50*2),false), conspa.morsch(), {memory: {role: 'carrier', home: raum}});       
         }
