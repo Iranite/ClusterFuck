@@ -248,7 +248,7 @@ module.exports.loop = function () {
                 let scale = Math.pow(defenseHits.length,1) // the bigger the better?
                 defenseLimit = (scale*Math.min(...defenseHits) + _.sum(defenseHits))/(scale*2);
                 _.remove(defenses, function(thing) {return thing.hits > defenseLimit}) //gives an array with below average defense structures.
-                var Sterkmy = defenses.length+'@'+_.floor(defenseLimit/1000000,2)+'M';
+                //var Sterkmy = defenses.length+'@'+_.floor(defenseLimit/1000000,2)+'M'; // used to make repairers say something.
                 for(let l = 0;l < defenses.length;l++){
                     Memory.claim[n].defenses[l]=defenses[l].id;
                 }
@@ -351,9 +351,7 @@ module.exports.loop = function () {
     for(let roomdex = 0;roomdex < Memory.claim.length;roomdex++){
         
         let raum = Memory.claim[roomdex].room;
-        let rank = Memory.claim[roomdex].rank;
-        Memory.claim[roomdex].hostile = Game.rooms[raum].find(FIND_HOSTILE_CREEPS).length;
-        
+        let rank = Memory.claim[roomdex].rank;        
         let limits = noLimits[roomdex];
         if(rank === 0){continue;}
 
@@ -366,14 +364,6 @@ module.exports.loop = function () {
             spawn = Game.getObjectById(Memory.claim[roomdex].spawns[m])
             if(!spawn.spawning){break;}  
         }
-        
-        
-    
-        
-        
-        
-        
-        
         
         limits.drops = spawn.pos.findInRange(FIND_DROPPED_RESOURCES,7);
         //if(!sim&&Game.rooms['E47S38']){noLimits[1].drops = Game.getObjectById(Memory.claim[1].spawns[0]).pos.findInRange(FIND_DROPPED_RESOURCES,7);} //temp
@@ -425,6 +415,7 @@ module.exports.loop = function () {
         limits.sites = [];
         limits.siteroom = [];
         // Hivemind searching for enemies and construction sites over the territory  
+        Memory.claim[roomdex].hostile = Game.rooms[raum].find(FIND_HOSTILE_CREEPS).length;
         for (let room of Memory.claim[roomdex].territory){
             if (Game.rooms[room]){
                 let bites = Game.rooms[room].find(FIND_CONSTRUCTION_SITES);
@@ -436,7 +427,7 @@ module.exports.loop = function () {
                 Memory.claim[index].hostile = Game.rooms[room].find(FIND_HOSTILE_CREEPS).length;
             }
         }
-        if(!limits.sites.length){limits.sites = Game.rooms[raum].find(FIND_CONSTRUCTION_SITES); limits.siteroom = raum}
+        //if(!limits.sites.length){limits.sites = Game.rooms[raum].find(FIND_CONSTRUCTION_SITES); limits.siteroom = raum}
         // Alarming all the Bummis
         Memory.claim[roomdex].Alarm = Math.max(...Memory.claim.map(claim => claim.hostile));
         Memory.claim[roomdex].AlarmRoom = Memory.claim[roomdex].Alarm ?  Memory.claim[Memory.claim.findIndex(claim => claim.hostile === Memory.claim[roomdex].Alarm )].room : false;
@@ -576,7 +567,7 @@ module.exports.loop = function () {
             }
         }
         else if(!upgraders[roomdex].length){
-            if(spawn.spawnCreep(conspa.spwnUpg(extis), 'Untgrad '+conspa.morsch(), {memory: {role: 'upgrader', home: raum}}) !=0){
+            if(spawn.spawnCreep(conspa.spwnUpg(extis,roomdex), 'Untgrad '+conspa.morsch(), {memory: {role: 'upgrader', home: raum}}) !=0){
                 spawn.spawnCreep([WORK,CARRY,MOVE], 'Untgrad '+conspa.morsch(), {memory: {role: 'upgrader', home: raum}}); 
             }
         }
@@ -593,10 +584,10 @@ module.exports.loop = function () {
                 (builders[roomdex].length < Math.min(limits.maxBuilders,upgraders[roomdex].length) && limits.sites.length && harvesters[roomdex].length == limits.maxHarvesters)){
             spawn.spawnCreep(conspa.spwnBui(extis), conspa.morsch(), {memory: {role: 'builder', home: raum}});
         }
-        else if(pavers[roomdex].length < 1&&Memory.paving.current&&(extis-300)/50>20&&carriers[roomdex].length>Memory.claim[roomdex].maxCarriers/2){ 
+        else if(_.sum(pavers.map(c => c.length)) < 1&&Memory.paving.current&&(extis-300)/50>20&&carriers[roomdex].length>Memory.claim[roomdex].maxCarriers/2){ 
             spawn.spawnCreep([WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE], 'p'+conspa.morsch(), {memory: {role: 'paver', home: raum}});
         }
-        else if(pavers[roomdex].length < 1&&Memory.paving.current&&(extis-300)/50>4&&carriers[roomdex].length>Memory.claim[roomdex].maxCarriers/2){
+        else if(_.sum(pavers.map(c => c.length)) < 1&&Memory.paving.current&&(extis-300)/50>4&&carriers[roomdex].length>Memory.claim[roomdex].maxCarriers/2){
             spawn.spawnCreep([WORK,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE], 'p'+conspa.morsch(), {memory: {role: 'paver', home: raum}});
         }
         else if(repairers[roomdex].length < 1&& Memory.claim[roomdex].defenses.length&&carriers[roomdex].length>Memory.claim[roomdex].maxCarriers/2){
@@ -612,7 +603,7 @@ module.exports.loop = function () {
             }
         }
         else if(upgraders[roomdex].length < limits.maxUpgraders && harvesters[roomdex].length == limits.maxHarvesters&&!needclaim) {
-            spawn.spawnCreep(conspa.spwnUpg(extis), 'Untgrad '+conspa.morsch(), {memory: {role: 'upgrader', home: raum}});
+            spawn.spawnCreep(conspa.spwnUpg(extis,roomdex), 'Untgrad '+conspa.morsch(), {memory: {role: 'upgrader', home: raum}});
         }
         
         // Spawning Bummis before everything else during alarm    
@@ -622,7 +613,7 @@ module.exports.loop = function () {
     }
     
     
-    
+
     
 
     
@@ -649,7 +640,6 @@ module.exports.loop = function () {
             if(Memory.init.CPU){cpuHar+=Game.cpu.getUsed()-CPU}
         }
         else if(creep.memory.role == 'upgrader') {
-            if(Game.time%(Math.ceil(Math.random()*25)) == 0 && creep.memory.home == 'E47S38'){creep.say('I did this',true);}
             roleUpgrader.run(creep,noLimits);
             if(Memory.init.CPU){cpuUpg+=Game.cpu.getUsed()-CPU}
         }
@@ -673,9 +663,6 @@ module.exports.loop = function () {
             roleBummi.run(creep);
         }
         else if(creep.memory.role == 'repairer'){
-            if(Sterkmy){
-                creep.say(Sterkmy,true);
-            }
             roleRepairer.run(creep);
             if(Memory.init.CPU){cpuRep+=Game.cpu.getUsed()-CPU}
         }

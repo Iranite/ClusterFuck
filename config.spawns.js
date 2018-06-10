@@ -51,9 +51,51 @@ module.exports = {
             }
         }
     },
-    spwnUpg: function(extis) {
-    //convert power to extis
-    extis = (extis-300)/50;
+    spwnUpg: function(extis,roomdex) {
+
+    //convert roomdex to RCL
+    let RCL = Game.getObjectById(Memory.claim[roomdex].id).level;
+    let W=Math.min(Math.max(Math.floor(extis/150),1),27);
+    if(RCL == 8){
+        W=Math.min(Math.max(Math.floor(Game.rooms[Memory.claim[roomdex].room].storage.store.energy/10000),1),15)
+    }
+    let C = Math.ceil(W/3);
+    let M = Math.ceil(W/2);
+    let repurn = [];
+    for(let n=0;n<W;n++){
+        repurn = repurn.concat([WORK]);
+    }
+    for(let n=0;n<C;n++){
+        repurn = repurn.concat([CARRY]);
+    }
+    for(let n=0;n<M;n++){
+        repurn = repurn.concat([MOVE]);
+    }
+    //console.log(`RCL:${RCL} W${W} C${C} M${M} and ${repurn.length} in ${repurn}`);
+    return repurn;
+    
+
+/*
+this
+    n = Math.max(Math.floor(extis/150),1)               W C M
+    1     WCM                           200             1 1 1 
+    2     WWCM                          300             2 1 1
+    3     WWWCMM                        450             3 1 2
+    4     WWWWCCMM                      600             4 2 2
+    5     WWWWWCCMMM                    750             5 2 3
+    6     WWWWWWCCMMM                   850             6 2 3
+    7     WWWWWWWCCCMMMM               1050             7 3 4
+    8     WWWWWWWWCCCMMMM              1150
+    9     WWWWWWWWWCCCMMMMM            1300
+    10    WWWWWWWWWWCCCCMMMMM          1450
+    12    WWWWWWWWWWWWCCCCMMMMMM       1700
+    15    WWWWWWWWWWWWWWWCCCCCMMMMMMMM 2150            15 5 8 
+
+
+*/
+
+        //convert power to extis
+        extis = (extis-300)/50;
         switch(extis){
         case 0:
         case 1:

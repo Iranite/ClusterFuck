@@ -5,7 +5,6 @@ var roleUpgrader = {
         let speicher = creep.home.storage;
         var homedex = Memory.rooms[creep.memory.home];
         let spawn = Game.getObjectById(Memory.claim[homedex].spawns[0]);
-        var temphome = Game.getObjectById(Memory.claim[homedex].spawns[0]).name
         let drops = noLimits[homedex].drops;
 
         
@@ -24,10 +23,8 @@ var roleUpgrader = {
             }
         }
 	    else if(creep.memory.werk) {
-            if(creep.upgradeController(creep.home.controller) == ERR_NOT_IN_RANGE) {
-                creep.moveTo(creep.home.controller);
-                creep.repair(Game.getObjectById(Memory.init.speicher));
-            }
+            creep.upgradeController(creep.home.controller);
+            creep.moveTo(creep.home.controller);            
         }
         else if(drops.length > 0){
             var target=creep.pos.findClosestByRange(drops);
@@ -40,7 +37,7 @@ var roleUpgrader = {
                 creep.moveTo(Game.getObjectById(Memory.claim[homedex].linkB));
             }
         }
-        else if(creep.home.storage && temphome !== 'daar'){
+        else if(creep.home.storage){
             if(creep.pos.isNearTo(creep.home.storage)){
                 creep.withdraw(creep.home.storage,RESOURCE_ENERGY);
             }
@@ -48,7 +45,7 @@ var roleUpgrader = {
                 creep.moveTo(creep.home.storage);
             }
         }
-        else if(spawn.room.energyAvailable == spawn.room.energyCapacityAvailable||temphome == 'daar'){
+        else if(spawn.room.energyAvailable == spawn.room.energyCapacityAvailable){
                 creep.withdraw(spawn,RESOURCE_ENERGY);
                 creep.moveTo(spawn);
         }

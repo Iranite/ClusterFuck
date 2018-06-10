@@ -38,7 +38,7 @@ var roleCarrier = {
             if(raum === Memory.claim[homedex].AlarmRoom && raum!==creep.memory.home){
                 creep.moveTo(creep.home.controller);
                 creep.say('Yikes!!!',true);
-                if(creep.room.name != Memory.claim[homedex].AlarmRoom){
+                if(creep.room.name != Memory.claim[homedex].AlarmRoom && creep.carry.energy == 0){
                  creep.memory.travel = false;
                  Memory.energie.ordered[index] -= volume;
                 }
