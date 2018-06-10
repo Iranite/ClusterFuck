@@ -32,8 +32,10 @@ Object.defineProperty(Creep.prototype, 'home', {
 
 
 
-
 module.exports.loop = function () {
+    //let pups = new Date()
+    //console.log(pups.getTime()-Memory.init.date)
+    //Memory.init.date = pups.getTime()
     //set Training variable.
     var sim = Object.keys(Game.rooms)[0] === 'sim' ? true : false;
     //function to find out who governs a current room.
@@ -156,13 +158,18 @@ module.exports.loop = function () {
         }
         
         //change rank if eligible
-        if(Memory.claim[n].rank == 0 && Memory.claim[n].spawns.length > 0){
-            Memory.claim[n].rank = 1;
+        if(Memory.claim[n].rank == 0 && Game.rooms[Memory.claim[n].room]){
+            if(Game.rooms[Memory.claim[n].room].controller.my){
+                Memory.claim[n].rank = 1;
+            }
         }
         else if(Memory.claim[n].rank < 2 && Game.rooms[Memory.claim[n].room]){
             if(Game.rooms[Memory.claim[n].room].storage){
                 Memory.claim[n].rank = 2;
             }
+        }
+        else if(Memory.claim[n].rank == 2 && Math.min(...Object.values(Game.map.describeExits(Memory.claim[n].room)).map(c => Memory.claim[Memory.rooms[c]].rank))==2){
+            Memory.claim[n].rank == 3;
         }
         
         // END HERE FOR REMOTE ROOMS and Outposts
@@ -183,7 +190,7 @@ module.exports.loop = function () {
                         for(let m = 1; m < 9;m+=2){
                             let Zwei = nachZwei[String(m)];
                             let zweiIndex = Memory.rooms[Zwei];
-                            zweiIndex > -1 ? (Zwei && Memory.claim[zweiIndex].rank < Memory.claim[einsIndex].rank)||Memory.claim[zweiIndex].rank === 0 ? Territorium.push(Zwei):'':'';
+                            zweiIndex > -1 ? (Zwei && Memory.claim[zweiIndex].rank < rankEins)? Territorium.push(Zwei):'':'';
                         }
                     }
                 }
@@ -263,7 +270,7 @@ module.exports.loop = function () {
             }
         }
 
-        if(Memory.rooms['E47S38']){Memory.claim[1].rank = 1} //temp
+        //if(Memory.rooms['E47S38']){Memory.claim[1].rank = 1} //temp 
     //Gather Energy source Information to manage and oversee Carrier jobs
         for(let n = 0; n < Memory.energie.quelle.length;n++){
             // set governing room of energy source and new distances, if governing room changed.
@@ -338,158 +345,158 @@ module.exports.loop = function () {
     
     
     
-    
-    // for(roomdex = 0;roomdex < Memory.claim.length;roomdex++)
-    let roomdex = 0;  //<------------- Iterate through this number!!
-    let raum = Memory.claim[roomdex].room;
-    let rank = Memory.claim[roomdex].rank;
-    Memory.claim[roomdex].hostile = Game.rooms[raum].find(FIND_HOSTILE_CREEPS).length;
-    
-    let limits = noLimits[roomdex];
-    //if(rank === 0){continue;}
+    var harvesters = [], upgraders = [], builders = [], carriers = [], bummis =[], claimers =[], distributors=[], repairers =[], pavers=[], tappers=[];
+    for(let roomdex = 0;roomdex < Memory.claim.length;roomdex++){
+        
+        let raum = Memory.claim[roomdex].room;
+        let rank = Memory.claim[roomdex].rank;
+        Memory.claim[roomdex].hostile = Game.rooms[raum].find(FIND_HOSTILE_CREEPS).length;
+        
+        let limits = noLimits[roomdex];
+        if(rank === 0){continue;}
 
-    //check see if there's a yellow flag this room has to worry about.
-    limits.flags = _.filter(Game.flags,flag => flag.color == 6&&flag.memory.home === raum); // yellow flags.
+        //check see if there's a yellow flag this room has to worry about.
+        limits.flags = _.filter(Game.flags,flag => flag.color == 6&&flag.memory.home === raum); // yellow flags.
 
-    // use free spawn, if more than 1 available.
-    let spawn = {};
-    for(let m = 0;m<Memory.claim[roomdex].spawns.length;m++){
-        spawn = Game.getObjectById(Memory.claim[roomdex].spawns[m])
-        if(!spawn.spawning){break;}  
-    }
-     
+        // use free spawn, if more than 1 available.
+        let spawn = {};
+        for(let m = 0;m<Memory.claim[roomdex].spawns.length;m++){
+            spawn = Game.getObjectById(Memory.claim[roomdex].spawns[m])
+            if(!spawn.spawning){break;}  
+        }
+        
+        
     
-  
-    
-    
-    
-    
-    
-    
-    limits.drops = spawn.pos.findInRange(FIND_DROPPED_RESOURCES,7);
-    if(!sim&&Game.rooms['E47S38']){noLimits[1].drops = Game.getObjectById(Memory.claim[1].spawns[0]).pos.findInRange(FIND_DROPPED_RESOURCES,7);} //temp
-    // Extended Tutorial tower behavior FIND_MY_CREEPS
-    let towers = spawn.room.find(FIND_STRUCTURES,{filter:s=>s.structureType == STRUCTURE_TOWER});
-    let towergy= false;
-    if(towers.length) {
-        let friend = spawn.pos.findClosestByRange(FIND_MY_CREEPS,{filter: f => f.hits<f.hitsMax});
-        let closestHostile = spawn.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
-        for(let n=0;n<towers.length;n++){
-            // do towers need energy?
-            if(!towergy){towergy = towers[n].energy < towers[n].energyCapacity;}
-            if(friend){
-                towers[n].heal(friend);
+        
+        
+        
+        
+        
+        
+        limits.drops = spawn.pos.findInRange(FIND_DROPPED_RESOURCES,7);
+        //if(!sim&&Game.rooms['E47S38']){noLimits[1].drops = Game.getObjectById(Memory.claim[1].spawns[0]).pos.findInRange(FIND_DROPPED_RESOURCES,7);} //temp
+        // Extended Tutorial tower behavior FIND_MY_CREEPS
+        let towers = spawn.room.find(FIND_STRUCTURES,{filter:s=>s.structureType == STRUCTURE_TOWER});
+        let towergy= false;
+        if(towers.length) {
+            let friend = spawn.pos.findClosestByRange(FIND_MY_CREEPS,{filter: f => f.hits<f.hitsMax});
+            let closestHostile = spawn.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
+            for(let n=0;n<towers.length;n++){
+                // do towers need energy?
+                if(!towergy){towergy = towers[n].energy < towers[n].energyCapacity;}
+                if(friend){
+                    towers[n].heal(friend);
+                }
+                if(closestHostile) {
+                    towers[n].attack(closestHostile);
+                }
             }
-            if(closestHostile) {
-                towers[n].attack(closestHostile);
+        } 
+        let linkA = Game.getObjectById(Memory.claim[roomdex].linkA);
+        let linkB = Game.getObjectById(Memory.claim[roomdex].linkB);
+        let linkgy = false;
+        // Links need energy?
+        if(linkA&&linkB){
+            linkgy = linkA.energy<linkA.energyCapacity;
+            if(linkB.energy < 766){linkA.transferEnergy(linkB);}
+        }
+        else if(linkA && !linkB){
+            let ctrl = Game.rooms[Memory.claim[roomdex].room].controller.pos;
+            new RoomVisual(Memory.claim[roomdex].room).text('Build Link!',ctrl.x,ctrl.y+1);
+            new RoomVisual(Memory.claim[roomdex].room).rect(ctrl.x-4,ctrl.y-4,8,8,{fill: 'transparent', stroke: '#fff'});
+            linkgy = linkA.energy<linkA.energyCapacity;
+        }
+        // find energy structures needing energy
+        if(Game.rooms[raum].energyAvailable<Game.rooms[raum].energyCapacityAvailable||towergy||linkgy){
+        limits.energyNeed = Game.getObjectById(Memory.claim[roomdex].spawns[0]).pos.findInRange(FIND_STRUCTURES,7, {
+                            filter: (structure) => {
+                            return (structure.structureType == STRUCTURE_LINK ||
+                                    structure.structureType == STRUCTURE_EXTENSION ||
+                                    structure.structureType == STRUCTURE_TOWER ||
+                                    structure.structureType == STRUCTURE_SPAWN) &&
+                                    structure.energy < structure.energyCapacity;
+                            }});
+        }
+        else{limits.energyNeed = [];}
+        var extis = Game.rooms[raum].energyCapacityAvailable;   
+
+        limits.sites = [];
+        limits.siteroom = [];
+        // Hivemind searching for enemies and construction sites over the territory  
+        for (let room of Memory.claim[roomdex].territory){
+            if (Game.rooms[room]){
+                let bites = Game.rooms[room].find(FIND_CONSTRUCTION_SITES);
+                if(bites.length&&!limits.sites.length){
+                    limits.sites=bites;
+                    limits.siteroom = room;
+                }
+                let index = Memory.rooms[room];
+                Memory.claim[index].hostile = Game.rooms[room].find(FIND_HOSTILE_CREEPS).length;
             }
         }
-    } 
-    let linkA = Game.getObjectById(Memory.claim[roomdex].linkA);
-    let linkB = Game.getObjectById(Memory.claim[roomdex].linkB);
-    let linkgy = false;
-    // Links need energy?
-    if(linkA&&linkB){
-        linkgy = linkA.energy<linkA.energyCapacity;
-        if(linkB.energy < 766){linkA.transferEnergy(linkB);}
-    }
-    else if(linkA && !linkB){
-        let ctrl = Game.rooms[Memory.claim[roomdex].room].controller.pos;
-        new RoomVisual(Memory.claim[roomdex].room).text('Build Link!',ctrl.x,ctrl.y+1);
-        new RoomVisual(Memory.claim[roomdex].room).rect(ctrl.x-4,ctrl.y-4,8,8,{fill: 'transparent', stroke: '#fff'});
-        linkgy = linkA.energy<linkA.energyCapacity;
-    }
-    // find energy structures needing energy
-    if(Game.rooms[raum].energyAvailable<Game.rooms[raum].energyCapacityAvailable||towergy||linkgy){
-    limits.energyNeed = Game.getObjectById(Memory.claim[roomdex].spawns[0]).pos.findInRange(FIND_STRUCTURES,7, {
-                        filter: (structure) => {
-                        return (structure.structureType == STRUCTURE_LINK ||
-                                structure.structureType == STRUCTURE_EXTENSION ||
-                                structure.structureType == STRUCTURE_TOWER ||
-                                structure.structureType == STRUCTURE_SPAWN) &&
-                                structure.energy < structure.energyCapacity;
-                        }});
-    }
-    else{limits.energyNeed = [];}
-    var extis = Game.rooms[raum].energyCapacityAvailable;   
-
-    limits.sites = [];
-    limits.siteroom = [];
-    // Hivemind searching for enemies and construction sites over the territory  
-    for (let room of Memory.claim[roomdex].territory){
-        if (Game.rooms[room]){
-            let bites = Game.rooms[room].find(FIND_CONSTRUCTION_SITES);
-            if(bites.length&&!limits.sites.length){
-                limits.sites=bites;
-                limits.siteroom = room;
-            }
-            let index = Memory.rooms[room];
-            Memory.claim[index].hostile = Game.rooms[room].find(FIND_HOSTILE_CREEPS).length;
-        }
-    }
-    if(!limits.sites.length){limits.sites = Game.rooms[raum].find(FIND_CONSTRUCTION_SITES); limits.siteroom = raum}
-    // Alarming all the Bummis
-    Memory.claim[roomdex].Alarm = Math.max(...Memory.claim.map(claim => claim.hostile));
-    Memory.claim[roomdex].AlarmRoom = Memory.claim[roomdex].Alarm ?  Memory.claim[Memory.claim.findIndex(claim => claim.hostile === Memory.claim[roomdex].Alarm )].room : false;
-    
-    
-    
-   // maximum amount of upgraders. Always 1 upgrader and a builder? if construction is a thing and storage isn't.
-    if(Game.rooms[raum].controller.level === 8){
-        limits.maxUpgraders = 1;
-    }
-    else if(Game.rooms[raum].storage){
-        let divider = Game.rooms[raum].controller.level*Game.rooms[raum].energyCapacityAvailable;
-        limits.maxUpgraders = Math.max(Math.floor(Game.rooms[raum].storage.store.energy/divider), 1);
-    }
-    else{
-        let haufen = Game.rooms[raum].lookForAt(LOOK_RESOURCES,spawn.pos.x,spawn.pos.y-3)[0];
-        if(haufen){
-            limits.maxUpgraders = Math.max(Math.floor(haufen.amount/Game.rooms[raum].energyCapacityAvailable), 1)
-        }
-        else{
+        if(!limits.sites.length){limits.sites = Game.rooms[raum].find(FIND_CONSTRUCTION_SITES); limits.siteroom = raum}
+        // Alarming all the Bummis
+        Memory.claim[roomdex].Alarm = Math.max(...Memory.claim.map(claim => claim.hostile));
+        Memory.claim[roomdex].AlarmRoom = Memory.claim[roomdex].Alarm ?  Memory.claim[Memory.claim.findIndex(claim => claim.hostile === Memory.claim[roomdex].Alarm )].room : false;
+        
+        
+        
+    // maximum amount of upgraders. Always 1 upgrader and a builder? if construction is a thing and storage isn't.
+        if(Game.rooms[raum].controller.level === 8){
             limits.maxUpgraders = 1;
         }
-    }
+        else if(Game.rooms[raum].storage){
+            let divider = Game.rooms[raum].controller.level*Game.rooms[raum].energyCapacityAvailable;
+            limits.maxUpgraders = Math.max(Math.floor(Game.rooms[raum].storage.store.energy/divider), 1);
+        }
+        else{
+            let haufen = Game.rooms[raum].lookForAt(LOOK_RESOURCES,spawn.pos.x,spawn.pos.y-3)[0];
+            if(haufen){
+                limits.maxUpgraders = Math.max(Math.floor(haufen.amount/Game.rooms[raum].energyCapacityAvailable), 1)
+            }
+            else{
+                limits.maxUpgraders = 1;
+            }
+        }
+
+        
+
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    //counting and categorizing creeps for each room.
+        harvesters[roomdex]= _.filter(Game.creeps, creep => creep.memory.role == 'harvester' && creep.memory.home == raum);
+        upgraders[roomdex]= _.filter(Game.creeps, creep => creep.memory.role == 'upgrader' && creep.memory.home == raum);
+        //upgraders[1] =  _.filter(Game.creeps, creep => creep.memory.role == 'upgrader' && creep.memory.home == 'E47S38'); // temp
+        builders[roomdex]= _.filter(Game.creeps, creep => creep.memory.role == 'builder' && creep.memory.home == raum);
+        carriers[roomdex]= _.filter(Game.creeps, creep => creep.memory.role == 'carrier' && creep.memory.home == raum);
+        bummis[roomdex]= _.filter(Game.creeps, creep=> creep.memory.role == 'bummi' && creep.memory.home == raum);
+        claimers[roomdex]= _.filter(Game.creeps, creep => creep.memory.role == 'claimer' && creep.memory.home == raum);
+        distributors[roomdex]   = _.filter(Game.creeps, creep => creep.memory.role == 'distributor' && creep.memory.home == raum);
+        repairers[roomdex]= _.filter(Game.creeps, creep => creep.memory.role == 'repairer' && creep.memory.home == raum);
+        pavers[roomdex]= _.filter(Game.creeps, creep => creep.memory.role == 'paver' && creep.memory.home == raum);
+        tappers[roomdex]= _.filter(Game.creeps, creep=> creep.memory.role == 'tapper' && creep.memory.home == raum);
+        limits.maxBuilders = limits.maxUpgraders;
+    // temporary  code for second room
+    /*
+        if(!upgraders[1].length&&!sim&&Game.rooms['E47S38']){
+            Game.getObjectById(Memory.claim[1].spawns[0]).spawnCreep([WORK,CARRY,MOVE], 'Untgrad ' + conspa.morsch(), {memory: {role: 'upgrader', home: Game.rooms[Memory.claim[1].room].name}}); 
+        }
+    */
+
 
     
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    var harvesters = [], upgraders = [], builders = [], carriers = [], bummis =[], claimers =[], distributors=[], repairers =[], pavers=[], tappers=[];
-//counting and categorizing creeps for each room.
-    harvesters[roomdex]= _.filter(Game.creeps, creep => creep.memory.role == 'harvester' && creep.memory.home == raum);
-    upgraders[roomdex]= _.filter(Game.creeps, creep => creep.memory.role == 'upgrader' && creep.memory.home == raum);
-    upgraders[1] =  _.filter(Game.creeps, creep => creep.memory.role == 'upgrader' && creep.memory.home == 'E47S38'); // temp
-    builders[roomdex]= _.filter(Game.creeps, creep => creep.memory.role == 'builder' && creep.memory.home == raum);
-    carriers[roomdex]= _.filter(Game.creeps, creep => creep.memory.role == 'carrier' && creep.memory.home == raum);
-    bummis[roomdex]= _.filter(Game.creeps, creep=> creep.memory.role == 'bummi' && creep.memory.home == raum);
-    claimers[roomdex]= _.filter(Game.creeps, creep => creep.memory.role == 'claimer' && creep.memory.home == raum);
-    distributors[roomdex]   = _.filter(Game.creeps, creep => creep.memory.role == 'distributor' && creep.memory.home == raum);
-    repairers[roomdex]= _.filter(Game.creeps, creep => creep.memory.role == 'repairer' && creep.memory.home == raum);
-    pavers[roomdex]= _.filter(Game.creeps, creep => creep.memory.role == 'paver' && creep.memory.home == raum);
-    tappers[roomdex]= _.filter(Game.creeps, creep=> creep.memory.role == 'tapper' && creep.memory.home == raum);
-    limits.maxBuilders = limits.maxUpgraders;
-// temporary  code for second room
- 
-    if(!upgraders[1].length&&!sim&&Game.rooms['E47S38']){
-        Game.getObjectById(Memory.claim[1].spawns[0]).spawnCreep([WORK,CARRY,MOVE], 'Untgrad ' + conspa.morsch(), {memory: {role: 'upgrader', home: Game.rooms[Memory.claim[1].room].name}}); 
-    }
-
-
-
-  
-    
-    
+        
+        
 
 
 
@@ -511,109 +518,106 @@ module.exports.loop = function () {
 
 
 
-    //Spawning all the creeps
-    //Spawn Claimers
-    let needclaim = false; // don't build upgraders, if we need claimers.
-    if (extis >= 1300 && !Memory.claim[roomdex].Alarm && distributors[roomdex].length && Memory.claim[roomdex].rank > 1){
-        for (let n=0;n < Memory.claim[roomdex].territory.length;n++){
-            let index = Memory.rooms[Memory.claim[roomdex].territory[n]];
-            //check if... rank is 0, then if parent or else parent of parent is this.
-            if(Memory.claim[index].rank > 0){continue;}
-            if(gov(Memory.claim[index].room) !== raum){continue;}
-            let sourceId = Memory.claim[index].id;
-            var claim = false;
-            if(Game.rooms[Memory.claim[index].room] && Memory.claim[index].rank === 0){
-                if(Game.getObjectById(sourceId).reservation){
-                    if(Game.getObjectById(sourceId).reservation.ticksToEnd<1000){
+        //Spawning all the creeps
+        //Spawn Claimers
+        let needclaim = false; // don't build upgraders, if we need claimers.
+        if (extis >= 1300 && !Memory.claim[roomdex].Alarm && distributors[roomdex].length && Memory.claim[roomdex].rank > 1){
+            for (let n=0;n < Memory.claim[roomdex].territory.length;n++){
+                let index = Memory.rooms[Memory.claim[roomdex].territory[n]];
+                //check if... rank is 0, then if parent or else parent of parent is this.
+                if(Memory.claim[index].rank > 0){continue;}
+                if(gov(Memory.claim[index].room) !== raum){continue;}
+                let sourceId = Memory.claim[index].id;
+                var claim = false;
+                if(Game.rooms[Memory.claim[index].room] && Memory.claim[index].rank === 0){
+                    if(Game.getObjectById(sourceId).reservation){
+                        if(Game.getObjectById(sourceId).reservation.ticksToEnd<1000){
+                            claim = true;
+                        }
+                    }
+                    else if(!Game.getObjectById(sourceId).reservation){
                         claim = true;
                     }
                 }
-                else if(!Game.getObjectById(sourceId).reservation){
-                    claim = true;
+                if (!_.some(claimers[roomdex], c => c.memory.role == 'claimer' && c.memory.sourceId == sourceId) && claim){
+                    spawn.spawnCreep([CLAIM,CLAIM,MOVE,MOVE], conspa.morsch(), {memory: {role: 'claimer', sourceId: sourceId, home: raum}});
+                    needclaim = true;
+                    break;   
                 }
             }
-            if (!_.some(claimers[roomdex], c => c.memory.role == 'claimer' && c.memory.sourceId == sourceId) && claim){
-                spawn.spawnCreep([CLAIM,CLAIM,MOVE,MOVE], conspa.morsch(), {memory: {role: 'claimer', sourceId: sourceId, home: raum}});
-                needclaim = true;
-                break;   
+        }
+        
+        //Spawn Harvesters
+        if(!limits.maxHarvesters||rare){
+            limits.maxHarvesters = _.filter(Memory.energie.gov, quelle => quelle === raum).length;
+        }
+        if(harvesters[roomdex].length&&harvesters[roomdex].length < limits.maxHarvesters){
+            // using the numbers to spawn "oldest source" first
+            for (let n = 0; n < Memory.energie.quelle.length; n++){
+                //ignore sources not belonging to this room.
+                if(Memory.energie.gov[n] !== raum){continue;}
+                let sourceId = Memory.energie.quelle[n];
+                if (!_.some(Game.creeps, c => c.memory.role == 'harvester' && c.memory.sourceId == sourceId)){
+                    spawn.spawnCreep(conspa.spwnHar(extis, n), conspa.morsch(), {memory: {role: 'harvester', sourceId: sourceId, home: raum}});
+                    break;
+                }
             }
         }
-    }
-    
-    //Spawn Harvesters
-    if(!limits.maxHarvesters||rare){
-        limits.maxHarvesters = _.filter(Memory.energie.gov, quelle => quelle === raum).length;
-    }
-    if(harvesters[roomdex].length&&harvesters[roomdex].length < limits.maxHarvesters){
-        // using the numbers to spawn "oldest source" first
-        for (let n = 0; n < Memory.energie.quelle.length; n++){
-            //ignore sources not belonging to this room.
-            if(Memory.energie.gov[n] !== raum){continue;}
-            let sourceId = Memory.energie.quelle[n];
-            if (!_.some(Game.creeps, c => c.memory.role == 'harvester' && c.memory.sourceId == sourceId)){
-                spawn.spawnCreep(conspa.spwnHar(extis, n), conspa.morsch(), {memory: {role: 'harvester', sourceId: sourceId, home: raum}});
-                break;
-            }
-        }
-    }
 
-    
-    if(!harvesters[roomdex].length){
-        spawn.spawnCreep(conspa.spwnHar(300, Memory.energie.raum.indexOf(raum)), conspa.morsch(), {memory: {role: 'harvester', sourceId: Memory.energie.quelle[Memory.energie.raum.indexOf(raum)], home: raum}});  
-    }
-    else if(!carriers[roomdex].length){
-        if(spawn.spawnCreep(conspa.spwnCar(Memory.claim[roomdex].isCarries,Memory.init.roads), conspa.morsch(), {memory: {role: 'carrier', home: raum}}) != 0){
-            spawn.spawnCreep(conspa.spwnCar(3,false), conspa.morsch(), {memory: {role: 'carrier', home: raum}});
+        
+        if(!harvesters[roomdex].length){
+            spawn.spawnCreep(conspa.spwnHar(300, Memory.energie.raum.indexOf(raum)), conspa.morsch(), {memory: {role: 'harvester', sourceId: Memory.energie.quelle[Memory.energie.raum.indexOf(raum)], home: raum}});  
+        }
+        else if(!carriers[roomdex].length){
+            if(spawn.spawnCreep(conspa.spwnCar(Memory.claim[roomdex].isCarries,Memory.init.roads), conspa.morsch(), {memory: {role: 'carrier', home: raum}}) != 0){
+                spawn.spawnCreep(conspa.spwnCar(3,false), conspa.morsch(), {memory: {role: 'carrier', home: raum}});
+            }
+        }
+        else if(!upgraders[roomdex].length){
+            if(spawn.spawnCreep(conspa.spwnUpg(extis), 'Untgrad '+conspa.morsch(), {memory: {role: 'upgrader', home: raum}}) !=0){
+                spawn.spawnCreep([WORK,CARRY,MOVE], 'Untgrad '+conspa.morsch(), {memory: {role: 'upgrader', home: raum}}); 
+            }
+        }
+        else if(bummis[roomdex].length < 1&& (extis-300)/50 > 4&&!sim&&Game.rooms['E47S38']){                   //1Guarding Bummi
+            spawn.spawnCreep(conspa.spwnBum(extis), conspa.morsch(), {memory: {role: 'bummi', raum: Game.rooms[Memory.claim[1].room].name, home: raum}});
+        }
+        else if((distributors[roomdex].length < 1 && extis > 300) || (distributors[roomdex].length < 1 && harvesters[roomdex].length == limits.maxHarvesters)){
+            spawn.spawnCreep(conspa.spwnCar(Math.min(32,Math.floor((extis)*2/150)),true), conspa.morsch(), {memory: {role: 'distributor', home: raum}});
+        }
+        else if(tappers[roomdex].length < 1 && limits.flags.length){
+            spawn.spawnCreep([MOVE], conspa.morsch(), {memory: {role: 'tapper', home: raum}});
+        }
+        else if((builders[roomdex].length < Math.min(limits.maxBuilders,upgraders[roomdex].length) && limits.sites.length && (extis-300)/50 > 0 ) ||
+                (builders[roomdex].length < Math.min(limits.maxBuilders,upgraders[roomdex].length) && limits.sites.length && harvesters[roomdex].length == limits.maxHarvesters)){
+            spawn.spawnCreep(conspa.spwnBui(extis), conspa.morsch(), {memory: {role: 'builder', home: raum}});
+        }
+        else if(pavers[roomdex].length < 1&&Memory.paving.current&&(extis-300)/50>20&&carriers[roomdex].length>Memory.claim[roomdex].maxCarriers/2){ 
+            spawn.spawnCreep([WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE], 'p'+conspa.morsch(), {memory: {role: 'paver', home: raum}});
+        }
+        else if(pavers[roomdex].length < 1&&Memory.paving.current&&(extis-300)/50>4&&carriers[roomdex].length>Memory.claim[roomdex].maxCarriers/2){
+            spawn.spawnCreep([WORK,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE], 'p'+conspa.morsch(), {memory: {role: 'paver', home: raum}});
+        }
+        else if(repairers[roomdex].length < 1&& Memory.init.defenses.length&&carriers[roomdex].length>Memory.claim[roomdex].maxCarriers/2){
+            spawn.spawnCreep(conspa.spwnBui(extis), conspa.morsch(), {memory: {role: 'repairer', home: raum}});  
+        }
+        else if((carriers[roomdex].length < Math.min(Memory.claim[roomdex].maxCarriers,harvesters[roomdex].length)) ||
+                (carriers[roomdex].length < Memory.claim[roomdex].maxCarriers && harvesters[roomdex].length == limits.maxHarvesters)) {
+            if(Game.rooms[Memory.claim[roomdex].room].energyAvailable < 1500&&Game.rooms[Memory.claim[roomdex].room].energyAvailable>299&&false){
+                spawn.spawnCreep(conspa.spwnCar(Math.floor(Game.rooms[Memory.claim[roomdex].room].energyAvailable/50*2),false), conspa.morsch(), {memory: {role: 'carrier', home: raum}});       
+            }
+            else{
+                spawn.spawnCreep(conspa.spwnCar(Memory.claim[roomdex].isCarries,Memory.init.roads), conspa.morsch(), {memory: {role: 'carrier', home: raum}});       
+            }
+        }
+        else if(upgraders[roomdex].length < limits.maxUpgraders && harvesters[roomdex].length == limits.maxHarvesters&&!needclaim) {
+            spawn.spawnCreep(conspa.spwnUpg(extis), 'Untgrad '+conspa.morsch(), {memory: {role: 'upgrader', home: raum}});
+        }
+        
+        // Spawning Bummis before everything else during alarm    
+        if(Memory.claim[roomdex].Alarm && bummis[roomdex].length < Memory.claim[roomdex].Alarm){
+            spawn.spawnCreep(conspa.spwnBum(extis), conspa.morsch(), {memory: {role: 'bummi', raum: Memory.claim[roomdex].AlarmRoom, home: raum}});
         }
     }
-    else if(!upgraders[roomdex].length){
-        if(spawn.spawnCreep(conspa.spwnUpg(extis), 'Untgrad '+conspa.morsch(), {memory: {role: 'upgrader', home: raum}}) !=0){
-            spawn.spawnCreep([WORK,CARRY,MOVE], 'Untgrad '+conspa.morsch(), {memory: {role: 'upgrader', home: raum}}); 
-        }
-    }
-    else if(!distributors[roomdex].length && false){
-        spawn.spawnCreep(conspa.spwnCar(20,true), conspa.morsch(), {memory: {role: 'distributor', home: raum}});
-    }
-    else if(bummis[roomdex].length < 1&& (extis-300)/50 > 4&&!sim&&Game.rooms['E47S38']){                   //1Guarding Bummi
-        spawn.spawnCreep(conspa.spwnBum(extis), conspa.morsch(), {memory: {role: 'bummi', raum: Game.rooms[Memory.claim[1].room].name, home: raum}});
-    }
-    else if(((distributors[roomdex].length < 1 && extis > 300) || (distributors[roomdex].length < 1 && harvesters[roomdex].length == limits.maxHarvesters))){
-        spawn.spawnCreep(conspa.spwnCar(Math.min(Math.floor((extis-300)/50*2/3)+3,32),true), conspa.morsch(), {memory: {role: 'distributor', home: raum}});
-    }
-    else if(tappers[roomdex].length < 1 && limits.flags.length){
-        spawn.spawnCreep([MOVE], conspa.morsch(), {memory: {role: 'tapper', home: raum}});
-    }
-    else if((builders[roomdex].length < Math.min(limits.maxBuilders,upgraders[roomdex].length) && limits.sites.length && (extis-300)/50 > 0 ) ||
-            (builders[roomdex].length < Math.min(limits.maxBuilders,upgraders[roomdex].length) && limits.sites.length && harvesters[roomdex].length == limits.maxHarvesters)){
-        spawn.spawnCreep(conspa.spwnBui(extis), conspa.morsch(), {memory: {role: 'builder', home: raum}});
-    }
-    else if(pavers[roomdex].length < 1&&Memory.paving.current&&(extis-300)/50>20&&carriers[roomdex].length>Memory.claim[roomdex].maxCarriers/2){ 
-        spawn.spawnCreep([WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE], 'p'+conspa.morsch(), {memory: {role: 'paver', home: raum}});
-    }
-    else if(pavers[roomdex].length < 1&&Memory.paving.current&&(extis-300)/50>4&&carriers[roomdex].length>Memory.claim[roomdex].maxCarriers/2){
-        spawn.spawnCreep([WORK,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE], 'p'+conspa.morsch(), {memory: {role: 'paver', home: raum}});
-    }
-    else if(repairers[roomdex].length < 1&& Memory.init.defenses.length&&carriers[roomdex].length>Memory.claim[roomdex].maxCarriers/2){
-        spawn.spawnCreep(conspa.spwnBui(extis), conspa.morsch(), {memory: {role: 'repairer', home: raum}});  
-    }
-    else if((carriers[roomdex].length < Math.min(Memory.claim[roomdex].maxCarriers,harvesters[roomdex].length)) ||
-            (carriers[roomdex].length < Memory.claim[roomdex].maxCarriers && harvesters[roomdex].length == limits.maxHarvesters)) {
-        if(Game.rooms[Memory.claim[roomdex].room].energyAvailable < 1500&&Game.rooms[Memory.claim[roomdex].room].energyAvailable>299&&false){
-            spawn.spawnCreep(conspa.spwnCar(Math.floor(Game.rooms[Memory.claim[roomdex].room].energyAvailable/50*2),false), conspa.morsch(), {memory: {role: 'carrier', home: raum}});       
-        }
-        else{
-            spawn.spawnCreep(conspa.spwnCar(Memory.claim[roomdex].isCarries,Memory.init.roads), conspa.morsch(), {memory: {role: 'carrier', home: raum}});       
-        }
-    }
-    else if(upgraders[roomdex].length < limits.maxUpgraders && harvesters[roomdex].length == limits.maxHarvesters&&!needclaim) {
-        spawn.spawnCreep(conspa.spwnUpg(extis), 'Untgrad '+conspa.morsch(), {memory: {role: 'upgrader', home: raum}});
-    }
-    
-// Spawning Bummis before everything else during alarm    
-    if(Memory.claim[roomdex].Alarm && bummis[roomdex].length < Memory.claim[roomdex].Alarm){
-        spawn.spawnCreep(conspa.spwnBum(extis), conspa.morsch(), {memory: {role: 'bummi', raum: Memory.claim[roomdex].AlarmRoom, home: raum}});
-    }
-    
     
     
     
@@ -639,11 +643,11 @@ module.exports.loop = function () {
         if(Memory.init.CPU){CPU=Game.cpu.getUsed()}
         if (creep.spawning){}
         else if(creep.memory.role == 'harvester') {
-            roleHarvester.run(creep,carriers[roomdex].length);
+            roleHarvester.run(creep,carriers[Memory.rooms[creep.memory.home]].length);
             if(Memory.init.CPU){cpuHar+=Game.cpu.getUsed()-CPU}
         }
         else if(creep.memory.role == 'upgrader') {
-            if(Game.time%(Math.ceil(Math.random()*25)) == 0 && creep.memory.home == 'E47S38'){creep.say('bad spawn!',true);}
+            if(Game.time%(Math.ceil(Math.random()*25)) == 0 && creep.memory.home == 'E47S38'){creep.say('I did this',true);}
             roleUpgrader.run(creep,noLimits);
             if(Memory.init.CPU){cpuUpg+=Game.cpu.getUsed()-CPU}
         }
@@ -652,7 +656,7 @@ module.exports.loop = function () {
             if(Memory.init.CPU){cpuBui+=Game.cpu.getUsed()-CPU}
         }
         else if(creep.memory.role == 'carrier') {
-            roleCarrier.run(creep,noLimits,distributors[roomdex].length);
+            roleCarrier.run(creep,noLimits,distributors[Memory.rooms[creep.memory.home]].length);
             if(Memory.init.CPU){cpuCar+=Game.cpu.getUsed()-CPU}
         }
         else if(creep.memory.role == 'claimer') {
@@ -698,14 +702,14 @@ module.exports.loop = function () {
         if(!sim){
         let stellen = 100;
         new RoomVisual('E47S39').text(' Ovr: '+Math.round(cpuAvg[0]*stellen)/stellen, 19, 27,{align: 'left'});
-        new RoomVisual('E47S39').text('\nHar:'+Math.round(cpuAvg[1]*stellen/harvesters[roomdex].length)/stellen, 19, 28,{align: 'left'});
+        new RoomVisual('E47S39').text('\nHar:'+Math.round(cpuAvg[1]*stellen/_.sum(harvesters.map(c => c.length)))/stellen, 19, 28,{align: 'left'});
         new RoomVisual('E47S39').text('\nUpg:'+Math.round(cpuAvg[2]*stellen/_.sum(upgraders.map(c => c.length)))/stellen, 19, 29,{align: 'left'});
-        new RoomVisual('E47S39').text('\nBui:'+Math.round(cpuAvg[3]*stellen/builders[roomdex].length)/stellen, 19, 30,{align: 'left'});
-        new RoomVisual('E47S39').text('\nCar:'+Math.round(cpuAvg[4]*stellen/carriers[roomdex].length)/stellen, 19, 31,{align: 'left'});
-        new RoomVisual('E47S39').text('\nCla:'+Math.round(cpuAvg[5]*stellen/claimers[roomdex].length)/stellen, 19, 32,{align: 'left'});
-        new RoomVisual('E47S39').text('\nDis:'+Math.round(cpuAvg[6]*stellen/distributors[roomdex].length)/stellen, 19, 33,{align: 'left'});
-        new RoomVisual('E47S39').text('\nRep:'+Math.round(cpuAvg[7]*stellen/repairers[roomdex].length)/stellen, 19, 34,{align: 'left'});
-        new RoomVisual('E47S39').text('\nPav:'+Math.round(cpuAvg[8]*stellen/pavers[roomdex].length)/stellen, 19, 35,{align: 'left'});
+        new RoomVisual('E47S39').text('\nBui:'+Math.round(cpuAvg[3]*stellen/_.sum(builders.map(c => c.length)))/stellen, 19, 30,{align: 'left'});
+        new RoomVisual('E47S39').text('\nCar:'+Math.round(cpuAvg[4]*stellen/_.sum(carriers.map(c => c.length)))/stellen, 19, 31,{align: 'left'});
+        new RoomVisual('E47S39').text('\nCla:'+Math.round(cpuAvg[5]*stellen/_.sum(claimers.map(c => c.length)))/stellen, 19, 32,{align: 'left'});
+        new RoomVisual('E47S39').text('\nDis:'+Math.round(cpuAvg[6]*stellen/_.sum(distributors.map(c => c.length)))/stellen, 19, 33,{align: 'left'});
+        new RoomVisual('E47S39').text('\nRep:'+Math.round(cpuAvg[7]*stellen/_.sum(repairers.map(c => c.length)))/stellen, 19, 34,{align: 'left'});
+        new RoomVisual('E47S39').text('\nPav:'+Math.round(cpuAvg[8]*stellen/_.sum(pavers.map(c => c.length)))/stellen, 19, 35,{align: 'left'});
         new RoomVisual('E47S39').text('\nSum:'+Math.round(cpuAvg[9]*stellen)/stellen, 19, 36,{align: 'left'});
         
 /*        console.log('Ovr:'+Math.round(cpuAvg[0]*stellen)/stellen+
@@ -728,7 +732,7 @@ module.exports.loop = function () {
     let avG = Memory.init.smallCpuAvg.length;
     if(avG >= 20){Memory.init.smallCpuAvg.shift();}
     Memory.init.smallCpuAvg.push(Game.cpu.getUsed());
-    if(!sim){new RoomVisual(Memory.claim[0].room).text('Carriers: '+carriers[roomdex].length+' | CPU('+avG+' tics): '+Math.round(_.sum(Memory.init.smallCpuAvg)/avG*10)/10+' | Bucket: '+Game.cpu.bucket, 19, 25,{align: 'left'});}
+    if(!sim){new RoomVisual(Memory.claim[0].room).text('Carriers: '+carriers[Memory.rooms[creep.memory.home]].length+' | CPU('+avG+' tics): '+Math.round(_.sum(Memory.init.smallCpuAvg)/avG*10)/10+' | Bucket: '+Game.cpu.bucket, 19, 25,{align: 'left'});}
 
 
 // testing stuff
