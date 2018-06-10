@@ -391,7 +391,7 @@ module.exports.loop = function () {
     // Links need energy?
     if(linkA&&linkB){
         linkgy = linkA.energy<linkA.energyCapacity;
-        if(linkB.energy < 766&&Game.time%4 == 1){linkA.transferEnergy(linkB);}
+        if(linkB.energy < 766){linkA.transferEnergy(linkB);}
     }
     else if(linkA && !linkB){
         let ctrl = Game.rooms[Memory.claim[roomdex].room].controller.pos;
@@ -551,7 +551,7 @@ module.exports.loop = function () {
             if(Memory.energie.gov[n] !== raum){continue;}
             let sourceId = Memory.energie.quelle[n];
             if (!_.some(Game.creeps, c => c.memory.role == 'harvester' && c.memory.sourceId == sourceId)){
-                spawn.spawnCreep(conspa.spwnHar(extis), conspa.morsch(), {memory: {role: 'harvester', sourceId: sourceId, home: raum}});
+                spawn.spawnCreep(conspa.spwnHar(extis, n), conspa.morsch(), {memory: {role: 'harvester', sourceId: sourceId, home: raum}});
                 break;
             }
         }
@@ -559,7 +559,7 @@ module.exports.loop = function () {
 
     
     if(!harvesters[roomdex].length){
-        spawn.spawnCreep(conspa.spwnHar(300), conspa.morsch(), {memory: {role: 'harvester', sourceId: Memory.energie.quelle[Memory.energie.raum.indexOf(raum)], home: raum}});  
+        spawn.spawnCreep(conspa.spwnHar(300, Memory.energie.raum.indexOf(raum)), conspa.morsch(), {memory: {role: 'harvester', sourceId: Memory.energie.quelle[Memory.energie.raum.indexOf(raum)], home: raum}});  
     }
     else if(!carriers[roomdex].length){
         if(spawn.spawnCreep(conspa.spwnCar(Memory.claim[roomdex].isCarries,Memory.init.roads), conspa.morsch(), {memory: {role: 'carrier', home: raum}}) != 0){

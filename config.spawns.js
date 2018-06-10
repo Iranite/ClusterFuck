@@ -18,7 +18,7 @@ module.exports = {
         console.log('oops');
     },
 // configuring the creeps    
-    spwnHar: function(extis) {
+    spwnHar: function(extis,index) {
     //convert power to extis
     extis = (extis-300)/50;
         switch(extis){
@@ -41,7 +41,14 @@ module.exports = {
         case 13:
         case 14: return [WORK,WORK,WORK,WORK,CARRY,MOVE,MOVE,MOVE]; // 650 - 7
                 break;
-        default: return  [WORK,WORK,WORK,WORK,WORK,WORK,CARRY,MOVE,MOVE,MOVE]; //800 - 10
+        default: {
+            if(Memory.energie.conti[index]&&Memory.claim[Memory.rooms[Memory.energie.raum[index]]].rank === 0){
+                return  [WORK,WORK,WORK,WORK,WORK,WORK,CARRY,MOVE,MOVE,MOVE]; //800 - 10
+            }
+            else{
+                return  [WORK,WORK,WORK,WORK,WORK,CARRY,MOVE,MOVE,MOVE]; //700 - 8
+            }
+            }
         }
     },
     spwnUpg: function(extis) {
