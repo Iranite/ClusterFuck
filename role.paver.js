@@ -40,7 +40,7 @@ var rolePaver = {
         }
     // go working
 	    else if(creep.memory.werk) {
-        //panic reaction
+            //panic reaction
 	        if(siteroom == Memory.claim[homedex].AlarmRoom){
 	            creep.moveTo(creep.home.controller);
 	            creep.say('Yikes!!!',true);

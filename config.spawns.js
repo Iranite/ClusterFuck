@@ -154,7 +154,7 @@ module.exports = {
         if(road){
             var leiste = [CARRY,CARRY,MOVE];
             var inhalt = leiste;
-            for(let n = 1; n< Math.ceil(carries/2);n++){
+            for(let n = 1; n< Math.floor(carries/2);n++){
                 leiste = leiste.concat(inhalt);
             }
             
