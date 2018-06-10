@@ -135,7 +135,10 @@ var roleCarrier = {
             let jobs = [];
             for(let n = 0; n < Memory.energie.waiting.length;n++){
                 // does this energy belong to this creeps response rooms?
-                if(Memory.energie.gov[n]!==creep.memory.home){continue;}
+                if(Memory.energie.gov[n]!==creep.memory.home){
+                    jobs[n] = 0;
+                    continue;
+                }
                 if(Game.rooms[Memory.energie.raum[n]]){
                     Memory.energie.waiting[n] = 0;
                     if(Memory.energie.conti[n]){
