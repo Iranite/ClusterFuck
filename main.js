@@ -20,10 +20,11 @@ Object.defineProperty(Creep.prototype, 'home', {
     enumerable: false,
     configurable: true
 });
+//I'm trying to cache things here.
+var noLimits = Memory.energie ? Memory.claim.map(c => new Object()):[{}];
+console.log('global reset '+JSON.stringify(noLimits));
 
-
-    var noLimits = Memory.energie ? Memory.claim.map(c => new Object()):[{}];
-    console.log('global reset '+JSON.stringify(noLimits));
+//place for testing stuff beforehand
 
 
 
@@ -33,10 +34,16 @@ Object.defineProperty(Creep.prototype, 'home', {
 
 
 module.exports.loop = function () {
-    //let pups = new Date()
-    //console.log(pups.getTime()-Memory.init.date)
-    //Memory.init.date = pups.getTime()
-    //set Training variable.
+    //place for testing stuff at the start
+
+
+
+
+
+
+
+
+    //set Training room variable.
     var sim = Object.keys(Game.rooms)[0] === 'sim' ? true : false;
     //function to find out who governs a current room.
     var gov = room => {
@@ -95,6 +102,7 @@ module.exports.loop = function () {
     }
     if(!sim&&Game.rooms[Memory.claim[0].room].storage){new RoomVisual(Memory.claim[0].room).text(Math.round(Game.rooms[Memory.claim[0].room].storage.store.energy/1000)+'k |'+Memory.energie.waiting.map(e => e-Memory.energie.ordered[Memory.energie.waiting.indexOf(e)])+'| rare: '+(Memory.init.intense-Game.time), 19, 26,{align: 'left'});}
     
+    //preinitializing performance monitor
     if (Memory.init.CPU && !Memory.init.cpuAvg.length){
         Memory.init.cpuAvg = [];
         for(let n=0;n<10;n++){
@@ -103,10 +111,7 @@ module.exports.loop = function () {
     }
     else if(!Memory.init.CPU){Memory.init.cpuAvg=[];}
     
-
-
-
-// cpu intense stuff that has to run often, as in once every 10 tics.
+    //RARE EVENT
     if (Game.time >= Memory.init.intense){
         Memory.init.intense = Math.ceil(Game.time+Math.random()*10)+3
         var rare = true;
@@ -144,9 +149,7 @@ module.exports.loop = function () {
             }
         }
         
-        
-        
-        // loop CLAIM for room updates!
+        //RARE CLAIM LOOP for room updates!
         for(let n = 0;n < Memory.claim.length;n++){
             //make roomdex object
             Memory.rooms[Memory.claim[n].room]= n;
@@ -254,11 +257,7 @@ module.exports.loop = function () {
                 }
             }
         }
-        
-
-
-        
-
+        //END OF RARE CLAIM LOOP
         
         // Initialize Road maintenance once roads are found
         if(!Memory.paving.current){
@@ -272,7 +271,6 @@ module.exports.loop = function () {
             }
         }
 
-        //if(Memory.rooms['E47S38']){Memory.claim[1].rank = 1} //temp 
         //Gather Energy source Information to manage and oversee Carrier jobs
         for(let n = 0; n < Memory.energie.quelle.length;n++){
             // set governing room of energy source and new distances, if governing room changed.
@@ -317,18 +315,9 @@ module.exports.loop = function () {
             if(Memory.energie.ordered[n]<0){Memory.energie.ordered[n] = 0;}
         }
     }
-    
-    
-    
+    //END OF RARE EVENT
 
-
-    
-    
-    
-
-
-
-        // Memory cleanup, removing dead creep's memory.
+    // Memory cleanup, removing dead creep's memory.
     for(let name in Memory.creeps){
         if(!Game.creeps[name]) {
             console.log('This creep probably died: '+Memory.creeps[name].role+' '+name);
@@ -336,17 +325,7 @@ module.exports.loop = function () {
         }
     }
 
-
-
-
-
-    
-
-
-    
-    
-    
-    
+    //ROOM LOOP
     var harvesters = [], upgraders = [], builders = [], carriers = [], bummis =[], claimers =[], distributors=[], repairers =[], pavers=[], tappers=[];
     for(let roomdex = 0;roomdex < Memory.claim.length;roomdex++){
         
@@ -366,7 +345,7 @@ module.exports.loop = function () {
         }
         
         limits.drops = spawn.pos.findInRange(FIND_DROPPED_RESOURCES,7);
-        //if(!sim&&Game.rooms['E47S38']){noLimits[1].drops = Game.getObjectById(Memory.claim[1].spawns[0]).pos.findInRange(FIND_DROPPED_RESOURCES,7);} //temp
+
         // Extended Tutorial tower behavior FIND_MY_CREEPS
         let towers = spawn.room.find(FIND_STRUCTURES,{filter:s=>s.structureType == STRUCTURE_TOWER});
         let towergy= false;
@@ -398,6 +377,7 @@ module.exports.loop = function () {
             new RoomVisual(Memory.claim[roomdex].room).rect(ctrl.x-4,ctrl.y-4,8,8,{fill: 'transparent', stroke: '#fff'});
             linkgy = linkA.energy<linkA.energyCapacity;
         }
+
         // find energy structures needing energy
         if(Game.rooms[raum].energyAvailable<Game.rooms[raum].energyCapacityAvailable||towergy||linkgy){
         limits.energyNeed = Game.getObjectById(Memory.claim[roomdex].spawns[0]).pos.findInRange(FIND_STRUCTURES,7, {
@@ -427,14 +407,12 @@ module.exports.loop = function () {
                 Memory.claim[index].hostile = Game.rooms[room].find(FIND_HOSTILE_CREEPS).length;
             }
         }
-        //if(!limits.sites.length){limits.sites = Game.rooms[raum].find(FIND_CONSTRUCTION_SITES); limits.siteroom = raum}
+        
         // Alarming all the Bummis
         Memory.claim[roomdex].Alarm = Math.max(...Memory.claim.map(claim => claim.hostile));
         Memory.claim[roomdex].AlarmRoom = Memory.claim[roomdex].Alarm ?  Memory.claim[Memory.claim.findIndex(claim => claim.hostile === Memory.claim[roomdex].Alarm )].room : false;
         
-        
-        
-    // maximum amount of upgraders. Always 1 upgrader and a builder? if construction is a thing and storage isn't.
+        // maximum amount of upgraders. Always 1 upgrader (and a builder?) if construction is a thing and storage isn't.
         if(Game.rooms[raum].controller.level === 8){
             limits.maxUpgraders = 1;
         }
@@ -452,24 +430,9 @@ module.exports.loop = function () {
             }
         }
 
-        
-
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-    //counting and categorizing creeps for each room.
+        //counting and categorizing creeps for each room.
         harvesters[roomdex]= _.filter(Game.creeps, creep => creep.memory.role == 'harvester' && creep.memory.home == raum);
         upgraders[roomdex]= _.filter(Game.creeps, creep => creep.memory.role == 'upgrader' && creep.memory.home == raum);
-        //upgraders[1] =  _.filter(Game.creeps, creep => creep.memory.role == 'upgrader' && creep.memory.home == 'E47S38'); // temp
         builders[roomdex]= _.filter(Game.creeps, creep => creep.memory.role == 'builder' && creep.memory.home == raum);
         carriers[roomdex]= _.filter(Game.creeps, creep => creep.memory.role == 'carrier' && creep.memory.home == raum);
         bummis[roomdex]= _.filter(Game.creeps, creep=> creep.memory.role == 'bummi' && creep.memory.home == raum);
@@ -479,39 +442,7 @@ module.exports.loop = function () {
         pavers[roomdex]= _.filter(Game.creeps, creep => creep.memory.role == 'paver' && creep.memory.home == raum);
         tappers[roomdex]= _.filter(Game.creeps, creep=> creep.memory.role == 'tapper' && creep.memory.home == raum);
         limits.maxBuilders = limits.maxUpgraders;
-    // temporary  code for second room
-    /*
-        if(!upgraders[1].length&&!sim&&Game.rooms['E47S38']){
-            Game.getObjectById(Memory.claim[1].spawns[0]).spawnCreep([WORK,CARRY,MOVE], 'Untgrad ' + conspa.morsch(), {memory: {role: 'upgrader', home: Game.rooms[Memory.claim[1].room].name}}); 
-        }
-    */
-
-
-    
         
-        
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        //Spawning all the creeps
         //Spawn Claimers
         let needclaim = false; // don't build upgraders, if we need claimers.
         if (extis >= 1300 && !Memory.claim[roomdex].Alarm && distributors[roomdex].length && Memory.claim[roomdex].rank > 1){
@@ -557,7 +488,7 @@ module.exports.loop = function () {
             }
         }
 
-        
+        //Spawning all the other creeps
         if(!harvesters[roomdex].length){
             spawn.spawnCreep(conspa.spwnHar(300, Memory.energie.raum.indexOf(raum)), conspa.morsch(), {memory: {role: 'harvester', sourceId: Memory.energie.quelle[Memory.energie.raum.indexOf(raum)], home: raum}});  
         }
@@ -571,7 +502,7 @@ module.exports.loop = function () {
                 spawn.spawnCreep([WORK,CARRY,MOVE], 'Untgrad '+conspa.morsch(), {memory: {role: 'upgrader', home: raum}}); 
             }
         }
-        else if(bummis[roomdex].length < 1&& (extis-300)/50 > 4&&!sim&&Game.rooms['E47S38']){                   //1Guarding Bummi
+        else if(bummis[roomdex].length < 1&& (extis-300)/50 > 4&&!sim&&false){
             spawn.spawnCreep(conspa.spwnBum(extis), conspa.morsch(), {memory: {role: 'bummi', raum: Game.rooms[Memory.claim[1].room].name, home: raum}});
         }
         else if((distributors[roomdex].length < 1 && extis > 300) || (distributors[roomdex].length < 1 && harvesters[roomdex].length == limits.maxHarvesters)){
@@ -611,13 +542,9 @@ module.exports.loop = function () {
             spawn.spawnCreep(conspa.spwnBum(extis), conspa.morsch(), {memory: {role: 'bummi', raum: Memory.claim[roomdex].AlarmRoom, home: raum}});
         }
     }
+    //END OF ROOM LOOP
     
-    
-
-    
-
-    
-//call creep behavior
+    //initializing performance readout
     if(Memory.init.CPU){
         var CPU = 0;
         var cpuHar = 0;
@@ -630,7 +557,8 @@ module.exports.loop = function () {
         var cpuPav = 0;
         var overhead = Game.cpu.getUsed();
     }
-    
+
+    //CREEP LOOP
     for(var name in Game.creeps) {
         var creep = Game.creeps[name];
         if(Memory.init.CPU){CPU=Game.cpu.getUsed()}
@@ -674,20 +602,19 @@ module.exports.loop = function () {
             roleTapper.run(creep,noLimits)
         }
     }
+    //END OF CREEP LOOP
+
+    //Performance monitor
     if(Memory.init.CPU){
         let cpuAvg = [overhead,cpuHar,cpuUpg,cpuBui,cpuCar,cpuCla,cpuDis,cpuRep,cpuPav,Game.cpu.getUsed()];
         for(let n=0;n<10;n++){
             Memory.init.cpuAvg[n].push(cpuAvg[n]);
         }
-        
-        
+
         for(let n=0;n<10;n++){
             cpuAvg[n]=_.sum(Memory.init.cpuAvg[n])/Memory.init.cpuAvg[n].length;
         }
-        
-        
-        
-        
+
         if(!sim){
         let stellen = 100;
         new RoomVisual('E47S39').text(' Ovr: '+Math.round(cpuAvg[0]*stellen)/stellen, 19, 27,{align: 'left'});
@@ -701,16 +628,6 @@ module.exports.loop = function () {
         new RoomVisual('E47S39').text('\nPav:'+Math.round(cpuAvg[8]*stellen/_.sum(pavers.map(c => c.length)))/stellen, 19, 35,{align: 'left'});
         new RoomVisual('E47S39').text('\nSum:'+Math.round(cpuAvg[9]*stellen)/stellen, 19, 36,{align: 'left'});
         
-/*        console.log('Ovr:'+Math.round(cpuAvg[0]*stellen)/stellen+
-                '\nHar:'+Math.round(cpuAvg[1]*stellen/harvesters.length)/stellen+
-                '\nUpg:'+Math.round(cpuAvg[2]*stellen/upgraders.length)/stellen+
-                '\nBui:'+Math.round(cpuAvg[3]*stellen/builders.length)/stellen+
-                '\nCar:'+Math.round(cpuAvg[4]*stellen/carriers.length)/stellen+
-                '\nCla:'+Math.round(cpuAvg[5]*stellen/claimers.length)/stellen+
-                '\nDis:'+Math.round(cpuAvg[6]*stellen/distributors.length)/stellen+
-                '\nRep:'+Math.round(cpuAvg[7]*stellen/repairers.length)/stellen+
-                '\nPav:'+Math.round(cpuAvg[8]*stellen/pavers.length)/stellen+
-                '\nSum:'+Math.round(cpuAvg[9]*stellen)/stellen); */
             if(Memory.init.cpuAvg[0].length > Memory.init.CPU){
                 for(let n = 0; n < Memory.init.cpuAvg.length;n++){
                     Memory.init.cpuAvg[n].shift();
@@ -723,8 +640,7 @@ module.exports.loop = function () {
     Memory.init.smallCpuAvg.push(Game.cpu.getUsed());
     if(!sim){new RoomVisual(Memory.claim[0].room).text('Carriers: '+carriers[Memory.rooms[Memory.claim[0].room]].length+' | CPU('+avG+' tics): '+Math.round(_.sum(Memory.init.smallCpuAvg)/avG*10)/10+' | Bucket: '+Game.cpu.bucket, 19, 25,{align: 'left'});}
 
-
-// testing stuff
+    // place for testing stuff at the end.
 
  
  

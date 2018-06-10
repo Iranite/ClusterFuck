@@ -57,7 +57,7 @@ module.exports = {
     let RCL = Game.getObjectById(Memory.claim[roomdex].id).level;
     let W=Math.min(Math.max(Math.floor(extis/150),1),27);
     if(RCL == 8){
-        W=Math.min(Math.max(Math.floor(Game.rooms[Memory.claim[roomdex].room].storage.store.energy/10000),1),15)
+        W=Math.min(Math.max(Math.floor(Game.rooms[Memory.claim[roomdex].room].storage.store.energy/33333),1),15)
     }
     let C = Math.ceil(W/3);
     let M = Math.ceil(W/2);
@@ -76,7 +76,6 @@ module.exports = {
     
 
 /*
-this
     n = Math.max(Math.floor(extis/150),1)               W C M
     1     WCM                           200             1 1 1 
     2     WWCM                          300             2 1 1
@@ -90,59 +89,7 @@ this
     10    WWWWWWWWWWCCCCMMMMM          1450
     12    WWWWWWWWWWWWCCCCMMMMMM       1700
     15    WWWWWWWWWWWWWWWCCCCCMMMMMMMM 2150            15 5 8 
-
-
 */
-
-        //convert power to extis
-        extis = (extis-300)/50;
-        switch(extis){
-        case 0:
-        case 1:
-        case 2: return  [WORK,WORK,CARRY,MOVE]; // 0
-                break;
-        case 3:
-        case 4: 
-        case 5:
-        case 6:
-        case 7:
-        case 8:
-        case 9:
-        case 10:
-        case 11: return  [WORK,WORK,WORK,CARRY,MOVE,MOVE]; // 3
-                break;
-        case 12:
-        case 13:
-        case 14:
-        case 15:
-        case 16:
-        case 17:
-        case 18:
-        case 19:
-        case 20: return [WORK,WORK,WORK,CARRY,MOVE,MOVE,WORK,WORK,WORK,CARRY,MOVE,MOVE]; //12
-                 break;
-        case 21:
-        case 22: 
-        case 23:
-        case 24:
-        case 25:
-        case 26:
-        case 27:
-        case 28:
-        case 29: return [WORK,WORK,WORK,CARRY,MOVE,MOVE,WORK,WORK,WORK,CARRY,MOVE,MOVE,WORK,WORK,WORK,CARRY,MOVE,MOVE]; //21
-                 break;
-        case 30: 
-        case 31:
-        case 32:
-        case 33:
-        case 34:
-        case 35:
-        case 36:
-        case 37:
-        case 38: return [WORK,WORK,WORK,CARRY,MOVE,MOVE,WORK,WORK,WORK,CARRY,MOVE,MOVE,WORK,WORK,WORK,CARRY,MOVE,MOVE,WORK,WORK,WORK,CARRY,MOVE,MOVE]; //30
-                 break;
-        default: return [WORK,WORK,WORK,CARRY,MOVE,MOVE,WORK,WORK,WORK,CARRY,MOVE,MOVE,WORK,WORK,WORK,CARRY,MOVE,MOVE,WORK,WORK,WORK,CARRY,MOVE,MOVE,WORK,WORK,WORK,CARRY,MOVE,MOVE]; //39
-        }
     },
     spwnBui: function(extis) {
     //convert power to extis
@@ -174,9 +121,9 @@ this
         case 18:
         case 19:
         case 20:
-        default: return [WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE]; //16
-        //         break;
-        //default: return [WORK,WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE]; //22 
+        case 21: return [WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE]; //16
+                 break;
+        default: return [WORK,WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE]; //22 
         }
     },
     //[CARRY,MOVE]*(3+Math.floor(extis/2));

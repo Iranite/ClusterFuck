@@ -24,7 +24,7 @@ var roleUpgrader = {
         }
 	    else if(creep.memory.werk) {
             creep.upgradeController(creep.home.controller);
-            creep.moveTo(creep.home.controller);            
+            creep.moveTo(creep.home.controller,{range: 2});
         }
         else if(drops.length > 0){
             var target=creep.pos.findClosestByRange(drops);

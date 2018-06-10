@@ -91,7 +91,7 @@ var roleCarrier = {
                 var linkA = Game.getObjectById(Memory.claim[homedex].linkA);
                 var linkgy = linkA.energy<linkA.energyCapacity
             }
-            if(linkgy && creep.carry.energy === creep.carryCapacity){
+            if(linkgy && creep.carry.energy/creep.carryCapacity>1/2){
                 if(creep.transfer(linkA, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
                     creep.moveTo(linkA);
                     creep.transfer(speicher,RESOURCE_ENERGY); //if possible, transfer to storage anyway
