@@ -330,6 +330,7 @@ module.exports.loop = function () {
     //ROOM LOOP
     var harvesters = [], upgraders = [], builders = [], carriers = [], bummis =[], claimers =[], distributors=[], repairers =[], pavers=[], tappers=[];
     for(let roomdex = 0;roomdex < Memory.claim.length;roomdex++){
+        let rank = Memory.claim[roomdex].rank;
         // FUCK THIS SHIT, IF this room isn't developed.
         if(rank === 0){continue;}
         let raum = Memory.claim[roomdex].room;
