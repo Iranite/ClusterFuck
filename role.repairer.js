@@ -30,6 +30,9 @@ var roleRepairer = {
                 if(creep.repair(defense) == ERR_NOT_IN_RANGE) {
                     creep.moveTo(defense);
                 }
+                else if(creep.pos.lookFor(LOOK_STRUCTURES).filter(s => s.structureType == STRUCTURE_ROAD).length){
+                    creep.move(Math.ceil(Math.random()*8));
+                }
 	        }else{
 	            creep.moveTo(creep.home.controller);
 	        }

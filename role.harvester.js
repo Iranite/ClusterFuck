@@ -23,7 +23,7 @@ var roleHarvester = {
             }
             //check to see if spawner is available first
             if(spawn.spawnCreep(conspa.spwnHar(Game.rooms[creep.memory.home].energyCapacityAvailable, index), Game.time, {memory: {role: 'harvester', sourceId: creep.memory.sourceId, home: Memory.energie.gov[index]},  dryRun: true }) == 0 ){
-                spawn.spawnCreep(conspa.spwnHar(Game.rooms[creep.memory.home].energyCapacityAvailable, index), conspa.morsch(), {memory: {role: 'harvester', sourceId: creep.memory.sourceId, home: Memory.energie.gov[index]}});
+                spawn.spawnCreep(conspa.spwnHar(Game.rooms[creep.memory.home].energyCapacityAvailable, index), 'Har'+conspa.morsch(), {memory: {role: 'harvester', sourceId: creep.memory.sourceId, home: Memory.energie.gov[index]}});
                 creep.memory.dying = true;
                 console.log('Spawning new harvester');
             }

@@ -199,7 +199,7 @@ module.exports.loop = function () {
                     }
                 }
                 Memory.claim[n].territory = Territorium; 
-            }else if(sim){Memory.claim[n].territory = [];}
+            }else if(sim){Memory.claim[n].territory = ['sim'];}
 
             // find and build stuff
             let spawn = spwns[0];
@@ -221,7 +221,8 @@ module.exports.loop = function () {
             // calculate CARRYies/maxCarriers for each source the room has to govern.
             let roomNRG = Game.rooms[Memory.claim[n].room].energyCapacityAvailable;
             let WORKs = Math.min(Math.floor((roomNRG-300)/50/5)+2,5)  // the amount of WORK per Harvester. (6 not included, as 5 is maximum harvest possible.)
-            if(Memory.init.roads){Memory.claim[n].maxCarries = Math.min(32,Math.floor((roomNRG)*2/150));} // road vehicles require 'less' parts per volume
+            Memory.init.WORKs = WORKs; // this is still needed elsewhere, sadly temp
+            if(Memory.init.roads){Memory.claim[n].maxCarries = Math.min(32,Math.floor(roomNRG/150)*2);} // road vehicles require 'less' parts per volume
             else{Memory.claim[n].maxCarries = Math.min(25,Math.floor((roomNRG)/100));}  // no roads
             let distance = 0;
             for(let m=0;m<Memory.energie.quelle.length;m++){
@@ -248,7 +249,8 @@ module.exports.loop = function () {
                 for (let k = 0;k < defenses.length;k++){
                     defenseHits[k]=defenses[k].hits;
                 }
-                let scale = Math.pow(defenseHits.length,1) // the bigger the better?
+                let square = Math.min(...defenseHits) < 1000 ? 2:1;
+                let scale = Math.pow(defenseHits.length,square) // the bigger the better?
                 defenseLimit = (scale*Math.min(...defenseHits) + _.sum(defenseHits))/(scale*2);
                 _.remove(defenses, function(thing) {return thing.hits > defenseLimit}) //gives an array with below average defense structures.
                 //var Sterkmy = defenses.length+'@'+_.floor(defenseLimit/1000000,2)+'M'; // used to make repairers say something.
@@ -328,11 +330,10 @@ module.exports.loop = function () {
     //ROOM LOOP
     var harvesters = [], upgraders = [], builders = [], carriers = [], bummis =[], claimers =[], distributors=[], repairers =[], pavers=[], tappers=[];
     for(let roomdex = 0;roomdex < Memory.claim.length;roomdex++){
-        
-        let raum = Memory.claim[roomdex].room;
-        let rank = Memory.claim[roomdex].rank;        
-        let limits = noLimits[roomdex];
+        // FUCK THIS SHIT, IF this room isn't developed.
         if(rank === 0){continue;}
+        let raum = Memory.claim[roomdex].room;
+        let limits = noLimits[roomdex];
 
         //check see if there's a yellow flag this room has to worry about.
         limits.flags = _.filter(Game.flags,flag => flag.color == 6&&flag.memory.home === raum); // yellow flags.
@@ -341,7 +342,15 @@ module.exports.loop = function () {
         let spawn = {};
         for(let m = 0;m<Memory.claim[roomdex].spawns.length;m++){
             spawn = Game.getObjectById(Memory.claim[roomdex].spawns[m])
-            if(!spawn.spawning){break;}  
+            if(!spawn.spawning){break;}
+            // call parent room for a spawn to use if no break after last iteration.
+            if(m === Memory.claim[roomdex].spawns.length-1 && Memory.claim[roomdex].parent){
+                let pardex = Memory.rooms[Memory.claim[roomdex].parent];
+                for (k = 0; k>Memory.claim[pardex].spawns.length;m++){
+                    spawn = Game.getObjectById(Memory.claim[pardex].spawns[k])
+                    if(!spawn.spawning){break;}
+                }
+            }
         }
         
         limits.drops = spawn.pos.findInRange(FIND_DROPPED_RESOURCES,7);
@@ -441,7 +450,7 @@ module.exports.loop = function () {
         repairers[roomdex]= _.filter(Game.creeps, creep => creep.memory.role == 'repairer' && creep.memory.home == raum);
         pavers[roomdex]= _.filter(Game.creeps, creep => creep.memory.role == 'paver' && creep.memory.home == raum);
         tappers[roomdex]= _.filter(Game.creeps, creep=> creep.memory.role == 'tapper' && creep.memory.home == raum);
-        limits.maxBuilders = limits.maxUpgraders;
+        limits.maxBuilders = Math.min(maxUpgraders[roomdex].length,limits.sites.length);
         
         //Spawn Claimers
         let needclaim = false; // don't build upgraders, if we need claimers.
@@ -464,7 +473,7 @@ module.exports.loop = function () {
                     }
                 }
                 if (!_.some(claimers[roomdex], c => c.memory.role == 'claimer' && c.memory.sourceId == sourceId) && claim){
-                    spawn.spawnCreep([CLAIM,CLAIM,MOVE,MOVE], conspa.morsch(), {memory: {role: 'claimer', sourceId: sourceId, home: raum}});
+                    spawn.spawnCreep([CLAIM,CLAIM,MOVE,MOVE], 'Cla'+conspa.morsch(), {memory: {role: 'claimer', sourceId: sourceId, home: raum}});
                     needclaim = true;
                     break;   
                 }
@@ -482,7 +491,7 @@ module.exports.loop = function () {
                 if(Memory.energie.gov[n] !== raum){continue;}
                 let sourceId = Memory.energie.quelle[n];
                 if (!_.some(Game.creeps, c => c.memory.role == 'harvester' && c.memory.sourceId == sourceId)){
-                    spawn.spawnCreep(conspa.spwnHar(extis, n), conspa.morsch(), {memory: {role: 'harvester', sourceId: sourceId, home: raum}});
+                    spawn.spawnCreep(conspa.spwnHar(extis, n), 'Har'+conspa.morsch(), {memory: {role: 'harvester', sourceId: sourceId, home: raum}});
                     break;
                 }
             }
@@ -490,11 +499,11 @@ module.exports.loop = function () {
 
         //Spawning all the other creeps
         if(!harvesters[roomdex].length){
-            spawn.spawnCreep(conspa.spwnHar(300, Memory.energie.raum.indexOf(raum)), conspa.morsch(), {memory: {role: 'harvester', sourceId: Memory.energie.quelle[Memory.energie.raum.indexOf(raum)], home: raum}});  
+            spawn.spawnCreep(conspa.spwnHar(300, Memory.energie.raum.indexOf(raum)), 'Har'+conspa.morsch(), {memory: {role: 'harvester', sourceId: Memory.energie.quelle[Memory.energie.raum.indexOf(raum)], home: raum}});  
         }
         else if(!carriers[roomdex].length){
-            if(spawn.spawnCreep(conspa.spwnCar(Memory.claim[roomdex].isCarries,Memory.init.roads), conspa.morsch(), {memory: {role: 'carrier', home: raum}}) != 0){
-                spawn.spawnCreep(conspa.spwnCar(3,false), conspa.morsch(), {memory: {role: 'carrier', home: raum}});
+            if(spawn.spawnCreep(conspa.spwnCar(Memory.claim[roomdex].isCarries,Memory.init.roads), 'Car'+conspa.morsch(), {memory: {role: 'carrier', home: raum}}) != 0){
+                spawn.spawnCreep(conspa.spwnCar(3,false), 'Car'+conspa.morsch(), {memory: {role: 'carrier', home: raum}});
             }
         }
         else if(!upgraders[roomdex].length){
@@ -503,35 +512,30 @@ module.exports.loop = function () {
             }
         }
         else if(bummis[roomdex].length < 1&& (extis-300)/50 > 4&&!sim&&false){
-            spawn.spawnCreep(conspa.spwnBum(extis), conspa.morsch(), {memory: {role: 'bummi', raum: Game.rooms[Memory.claim[1].room].name, home: raum}});
+            spawn.spawnCreep(conspa.spwnBum(extis), 'Bum'+conspa.morsch(), {memory: {role: 'bummi', raum: Game.rooms[Memory.claim[1].room].name, home: raum}});
         }
         else if((distributors[roomdex].length < 1 && extis > 300) || (distributors[roomdex].length < 1 && harvesters[roomdex].length == limits.maxHarvesters)){
-            spawn.spawnCreep(conspa.spwnCar(Math.min(32,Math.floor((extis)*2/150)),true), conspa.morsch(), {memory: {role: 'distributor', home: raum}});
+            spawn.spawnCreep(conspa.spwnCar(Math.min(32,Math.floor((extis)*2/150)),true), 'Dis'+conspa.morsch(), {memory: {role: 'distributor', home: raum}});
         }
         else if(tappers[roomdex].length < 1 && limits.flags.length){
-            spawn.spawnCreep([MOVE], conspa.morsch(), {memory: {role: 'tapper', home: raum}});
+            spawn.spawnCreep([MOVE], 'Tap'+conspa.morsch(), {memory: {role: 'tapper', home: raum}});
         }
-        else if((builders[roomdex].length < Math.min(limits.maxBuilders,upgraders[roomdex].length) && limits.sites.length && (extis-300)/50 > 0 ) ||
-                (builders[roomdex].length < Math.min(limits.maxBuilders,upgraders[roomdex].length) && limits.sites.length && harvesters[roomdex].length == limits.maxHarvesters)){
-            spawn.spawnCreep(conspa.spwnBui(extis), conspa.morsch(), {memory: {role: 'builder', home: raum}});
+        else if((builders[roomdex].length < limits.maxBuilders && limits.sites.length && (extis-300)/50 > 0 ) ||
+                (builders[roomdex].length <limits.maxBuilders && limits.sites.length && harvesters[roomdex].length == limits.maxHarvesters)){
+            spawn.spawnCreep(conspa.spwnBui(extis), 'Bui'+conspa.morsch(), {memory: {role: 'builder', home: raum}});
         }
         else if(_.sum(pavers.map(c => c.length)) < 1&&Memory.paving.current&&(extis-300)/50>20&&carriers[roomdex].length>Memory.claim[roomdex].maxCarriers/2){ 
-            spawn.spawnCreep([WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE], 'p'+conspa.morsch(), {memory: {role: 'paver', home: raum}});
+            spawn.spawnCreep([WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE], 'Pav'+conspa.morsch(), {memory: {role: 'paver', home: raum}});
         }
         else if(_.sum(pavers.map(c => c.length)) < 1&&Memory.paving.current&&(extis-300)/50>4&&carriers[roomdex].length>Memory.claim[roomdex].maxCarriers/2){
-            spawn.spawnCreep([WORK,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE], 'p'+conspa.morsch(), {memory: {role: 'paver', home: raum}});
+            spawn.spawnCreep([WORK,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE], 'Pav'+conspa.morsch(), {memory: {role: 'paver', home: raum}});
         }
         else if(repairers[roomdex].length < 1&& Memory.claim[roomdex].defenses.length&&carriers[roomdex].length>Memory.claim[roomdex].maxCarriers/2){
-            spawn.spawnCreep(conspa.spwnBui(extis), conspa.morsch(), {memory: {role: 'repairer', home: raum}});  
+            spawn.spawnCreep(conspa.spwnBui(extis), 'Rep'+conspa.morsch(), {memory: {role: 'repairer', home: raum}});  
         }
         else if((carriers[roomdex].length < Math.min(Memory.claim[roomdex].maxCarriers,harvesters[roomdex].length)) ||
                 (carriers[roomdex].length < Memory.claim[roomdex].maxCarriers && harvesters[roomdex].length == limits.maxHarvesters)) {
-            if(Game.rooms[Memory.claim[roomdex].room].energyAvailable < 1500&&Game.rooms[Memory.claim[roomdex].room].energyAvailable>299&&false){
-                spawn.spawnCreep(conspa.spwnCar(Math.floor(Game.rooms[Memory.claim[roomdex].room].energyAvailable/50*2),false), conspa.morsch(), {memory: {role: 'carrier', home: raum}});       
-            }
-            else{
-                spawn.spawnCreep(conspa.spwnCar(Memory.claim[roomdex].isCarries,Memory.init.roads), conspa.morsch(), {memory: {role: 'carrier', home: raum}});       
-            }
+            spawn.spawnCreep(conspa.spwnCar(Memory.claim[roomdex].isCarries,Memory.init.roads), 'Car'+conspa.morsch(), {memory: {role: 'carrier', home: raum}});
         }
         else if(upgraders[roomdex].length < limits.maxUpgraders && harvesters[roomdex].length == limits.maxHarvesters&&!needclaim) {
             spawn.spawnCreep(conspa.spwnUpg(extis,roomdex), 'Untgrad '+conspa.morsch(), {memory: {role: 'upgrader', home: raum}});
@@ -539,7 +543,7 @@ module.exports.loop = function () {
         
         // Spawning Bummis before everything else during alarm    
         if(Memory.claim[roomdex].Alarm && bummis[roomdex].length < Memory.claim[roomdex].Alarm){
-            spawn.spawnCreep(conspa.spwnBum(extis), conspa.morsch(), {memory: {role: 'bummi', raum: Memory.claim[roomdex].AlarmRoom, home: raum}});
+            spawn.spawnCreep(conspa.spwnBum(extis), 'Bum'+conspa.morsch(), {memory: {role: 'bummi', raum: Memory.claim[roomdex].AlarmRoom, home: raum}});
         }
     }
     //END OF ROOM LOOP
