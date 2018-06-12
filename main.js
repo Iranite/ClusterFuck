@@ -451,7 +451,7 @@ module.exports.loop = function () {
         repairers[roomdex]= _.filter(Game.creeps, creep => creep.memory.role == 'repairer' && creep.memory.home == raum);
         pavers[roomdex]= _.filter(Game.creeps, creep => creep.memory.role == 'paver' && creep.memory.home == raum);
         tappers[roomdex]= _.filter(Game.creeps, creep=> creep.memory.role == 'tapper' && creep.memory.home == raum);
-        limits.maxBuilders = Math.min(maxUpgraders[roomdex].length,limits.sites.length);
+        limits.maxBuilders = Math.min(upgraders[roomdex].length,limits.sites.length);
         
         //Spawn Claimers
         let needclaim = false; // don't build upgraders, if we need claimers.
