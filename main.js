@@ -347,7 +347,7 @@ module.exports.loop = function () {
             // call parent room for a spawn to use if no break after last iteration.
             if(m === Memory.claim[roomdex].spawns.length-1 && Memory.claim[roomdex].parent){
                 let pardex = Memory.rooms[Memory.claim[roomdex].parent];
-                for (k = 0; k>Memory.claim[pardex].spawns.length;m++){
+                for (k = 0; k<Memory.claim[pardex].spawns.length;k++){
                     spawn = Game.getObjectById(Memory.claim[pardex].spawns[k])
                     if(!spawn.spawning){break;}
                 }
@@ -390,16 +390,14 @@ module.exports.loop = function () {
 
         // find energy structures needing energy
         if(Game.rooms[raum].energyAvailable<Game.rooms[raum].energyCapacityAvailable||towergy||linkgy){
-            if(!limits.energyNeed||rare){
-                limits.energyNeed = Game.getObjectById(Memory.claim[roomdex].spawns[0]).pos.findInRange(FIND_STRUCTURES,7, {
-                                    filter: (structure) => {
-                                    return (structure.structureType == STRUCTURE_LINK ||
-                                            structure.structureType == STRUCTURE_EXTENSION ||
-                                            structure.structureType == STRUCTURE_TOWER ||
-                                            structure.structureType == STRUCTURE_SPAWN) &&
-                                            structure.energy < structure.energyCapacity;
-                                    }});
-            }
+            limits.energyNeed = Game.getObjectById(Memory.claim[roomdex].spawns[0]).pos.findInRange(FIND_STRUCTURES,7, {
+                                filter: (structure) => {
+                                return (structure.structureType == STRUCTURE_LINK ||
+                                        structure.structureType == STRUCTURE_EXTENSION ||
+                                        structure.structureType == STRUCTURE_TOWER ||
+                                        structure.structureType == STRUCTURE_SPAWN) &&
+                                        structure.energy < structure.energyCapacity;
+                                }});
         }
         else{limits.energyNeed = [];}
         var extis = Game.rooms[raum].energyCapacityAvailable;   
