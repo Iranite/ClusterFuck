@@ -68,6 +68,9 @@ var roleHarvester = {
                 }
                 else{console.log('harvester broken');}
             }
+            else if(Game.rooms[raum]){
+                creep.moveTo(source);
+            }
             else{
                 creep.moveTo(creep.pos.findClosestByPath(creep.room.findExitTo(raum)));
             }

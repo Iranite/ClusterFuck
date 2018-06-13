@@ -43,6 +43,11 @@ var roleCarrier = {
                  Memory.energie.ordered[index] -= volume;
                 }
             }
+            else if(Memory.energie.waiting[index] < 21){
+                creep.say('Dang!')
+                creep.memory.travel = false;
+                Memory.energie.ordered[index] -= volume;
+            }
             else if(creep.room.name == raum){
                 
 

@@ -390,14 +390,16 @@ module.exports.loop = function () {
 
         // find energy structures needing energy
         if(Game.rooms[raum].energyAvailable<Game.rooms[raum].energyCapacityAvailable||towergy||linkgy){
-        limits.energyNeed = Game.getObjectById(Memory.claim[roomdex].spawns[0]).pos.findInRange(FIND_STRUCTURES,7, {
-                            filter: (structure) => {
-                            return (structure.structureType == STRUCTURE_LINK ||
-                                    structure.structureType == STRUCTURE_EXTENSION ||
-                                    structure.structureType == STRUCTURE_TOWER ||
-                                    structure.structureType == STRUCTURE_SPAWN) &&
-                                    structure.energy < structure.energyCapacity;
-                            }});
+            if(!limits.energyNeed||rare){
+                limits.energyNeed = Game.getObjectById(Memory.claim[roomdex].spawns[0]).pos.findInRange(FIND_STRUCTURES,7, {
+                                    filter: (structure) => {
+                                    return (structure.structureType == STRUCTURE_LINK ||
+                                            structure.structureType == STRUCTURE_EXTENSION ||
+                                            structure.structureType == STRUCTURE_TOWER ||
+                                            structure.structureType == STRUCTURE_SPAWN) &&
+                                            structure.energy < structure.energyCapacity;
+                                    }});
+            }
         }
         else{limits.energyNeed = [];}
         var extis = Game.rooms[raum].energyCapacityAvailable;   

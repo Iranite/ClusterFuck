@@ -26,6 +26,9 @@ var roleClaimer = {
             creep.moveTo(contr);
             }
         }
+        else if(Game.rooms[raum]){
+            creep.moveTo(contr);
+        }
         else{
             creep.moveTo(creep.pos.findClosestByPath(creep.room.findExitTo(raum)));
         }

@@ -30,11 +30,20 @@ var roleDistributor = {
 	    if(!creep.memory.werk && (_.sum(creep.carry) == creep.carryCapacity || (drops.length == 0 && !speicher))) {
 	        creep.memory.werk = true;
 	    }
-        
         //work
         if (creep.memory.werk){
             if(targets.length > 0){
-                var target =creep.pos.findClosestByRange(targets);
+                let target;
+                if(creep.memory.job){
+                    target = Game.getObjectById(creep.memory.job)
+                    if(target.energy === target.energyCapacity){
+                        creep.memory.job = false;
+                    }
+                }
+                if(!creep.memory.job){
+                    target =creep.pos.findClosestByRange(targets, {filter: tar => tar.energy < tar.energyCapacity});    
+                    creep.memory.job = target.id
+                }
                 creep.moveTo(target);
                 if(creep.withdraw(speicher,RESOURCE_ENERGY) == 0){creep.say('sneaky',true);}
                 creep.transfer(target, RESOURCE_ENERGY);

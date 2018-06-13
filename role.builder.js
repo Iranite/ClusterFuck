@@ -49,13 +49,25 @@ var roleBuilder = {
 	        }
 	    }
         // getting energy
-        else if(Memory.claim[index].rank == 0 && creep.room.name !== creep.home.name){
-            var drops = creep.pos.findClosestByRange(FIND_DROPPED_RESOURCES, {filter: drop => drop.amount>100});
+        else if(creep.room.name !== creep.home.name){
+            let drops = creep.pos.findClosestByRange(FIND_DROPPED_RESOURCES, {filter: drop => drop.amount > creep.carryCapacity-creep.carry.energy});
             if(!drops){
-                creep.moveTo(spawn)
+                let conti = creep.pos.findClosestByRange(FIND_STRUCTURES, {filter: conti => conti.structureType == STRUCTURE_CONTAINER && conti.store.energy > creep.carryCapacity-creep.carry.energy});
+                if(!conti){
+                    if(creep.room.storage){
+                        creep.withdraw(creep.room.storage, RESOURCE_ENERGY);
+                        creep.moveTo(creep.room.storage);
+                    }
+                    else{
+                        creep.moveTo(spawn);
+                    }
+                }
+                else if(creep.withdraw(conti, RESOURCE_ENERGY)== ERR_NOT_IN_RANGE){
+                    creep.moveTo(conti);
+                }    
             }
             else if(creep.pickup(drops)== ERR_NOT_IN_RANGE){
-                creep.moveTo(drops)
+                creep.moveTo(drops);
             }
         }
 	    else if(speicher){
