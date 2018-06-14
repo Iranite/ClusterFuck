@@ -20,13 +20,18 @@ var roleRepairer = {
                 creep.moveTo(spawn);
             }
         }
+        // Go working!
 	    else if(creep.memory.werk) {
+             // move a step into the room when on the Exit...
+             if(creep.pos.x == 0||creep.pos.y == 0){creep.move(3);}
+             else if(creep.pos.x == 49||creep.pos.y == 49){creep.move(8);}
 	        if (creep.room.name === creep.home.name){
     	        var Defenses =[]
     	        for(let each of defenses){
     	            Defenses[defenses.indexOf(each)]=Game.getObjectById(each)
     	        }
                 var defense = creep.pos.findClosestByRange(Defenses);
+                if(defense){creep.memory.job = defense.id;}
                 if(creep.repair(defense) == ERR_NOT_IN_RANGE) {
                     creep.moveTo(defense);
                 }
@@ -34,7 +39,12 @@ var roleRepairer = {
                     creep.move(Math.ceil(Math.random()*8));
                 }
 	        }else{
-	            creep.moveTo(creep.home.controller);
+	            if(creep.memory.job){
+	                creep.moveTo(Game.getObjectById(creep.memory.job));
+	            }
+	            else{
+	                creep.moveTo(creep.home.controller);
+	            }
 	        }
 	    }
 	    else if(speicher){

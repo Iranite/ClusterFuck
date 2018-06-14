@@ -1,3 +1,4 @@
+///<reference path="Screeps-Typescript-Declarations\dist\screeps.d.ts" />
 var roleHarvester = require('role.harvester');
 var roleUpgrader = require('role.upgrader');
 var roleBuilder = require('role.builder');
@@ -390,7 +391,7 @@ module.exports.loop = function () {
 
         // find energy structures needing energy
         if(Game.rooms[raum].energyAvailable<Game.rooms[raum].energyCapacityAvailable||towergy||linkgy){
-            limits.energyNeed = Game.getObjectById(Memory.claim[roomdex].spawns[0]).pos.findInRange(FIND_STRUCTURES,7, {
+            limits.energyNeed = Game.getObjectById(Memory.claim[roomdex].spawns[0]).pos.findInRange(FIND_STRUCTURES,6, {
                                 filter: (structure) => {
                                 return (structure.structureType == STRUCTURE_LINK ||
                                         structure.structureType == STRUCTURE_EXTENSION ||
@@ -428,7 +429,7 @@ module.exports.loop = function () {
         }
         else if(Game.rooms[raum].storage){
             let divider = Game.rooms[raum].controller.level*Game.rooms[raum].energyCapacityAvailable;
-            limits.maxUpgraders = Math.max(Math.floor(Game.rooms[raum].storage.store.energy/divider), 1);
+            limits.maxUpgraders = Math.min(Math.max(Math.floor(Game.rooms[raum].storage.store.energy/divider), 1),7);
         }
         else{
             let haufen = Game.rooms[raum].lookForAt(LOOK_RESOURCES,spawn.pos.x,spawn.pos.y-3)[0];
@@ -644,7 +645,7 @@ module.exports.loop = function () {
     if(avG >= 20){Memory.init.smallCpuAvg.shift();}
     Memory.init.smallCpuAvg.push(Game.cpu.getUsed());
     if(!sim){new RoomVisual(Memory.claim[0].room).text('Carriers: '+carriers[Memory.rooms[Memory.claim[0].room]].length+' | CPU('+avG+' tics): '+Math.round(_.sum(Memory.init.smallCpuAvg)/avG*10)/10+' | Bucket: '+Game.cpu.bucket, 19, 25,{align: 'left'});}
-
+    
     // place for testing stuff at the end.
 
  
