@@ -13,7 +13,7 @@ var roleTapper = {
         var flag = noLimits[homedex].flags[0];
         var raum = flag.pos.roomName;
         
-        creep.moveTo(flag);
+        creep.travelTo(flag);
         // tapp a room. make claim object, fill in energie arrays
         if (creep.room.name == raum){
             

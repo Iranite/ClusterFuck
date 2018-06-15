@@ -1,4 +1,5 @@
 ///<reference path="Screeps-Typescript-Declarations\dist\screeps.d.ts" />
+var Traveler = require('Traveler')
 var roleHarvester = require('role.harvester');
 var roleUpgrader = require('role.upgrader');
 var roleBuilder = require('role.builder');
@@ -21,7 +22,7 @@ Object.defineProperty(Creep.prototype, 'home', {
     enumerable: false,
     configurable: true
 });
-//I'm trying to cache things here.
+//I'm trying to cache things here. 
 var noLimits = Memory.energie ? Memory.claim.map(c => new Object()):[{}];
 console.log('global reset '+JSON.stringify(noLimits));
 

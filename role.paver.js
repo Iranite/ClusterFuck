@@ -47,14 +47,14 @@ var rolePaver = {
         if(creep.ticksToLive < creep.carryCapacity/WORKs+25&&creep.carry.energy == 0){
             creep.say('bye...')
             if(spawn.recycleCreep(creep) == ERR_NOT_IN_RANGE){
-                creep.moveTo(spawn);
+                creep.travelTo(spawn);
             }
         }
     // go working
 	    else if(creep.memory.werk) {
             //panic reaction
 	        if(siteroom == Memory.claim[homedex].AlarmRoom){
-	            creep.moveTo(creep.home.controller);
+	            creep.travelTo(creep.home.controller);
 	            creep.say('Yikes!!!',true);
 	        }
 	        else if(creep.room.name == siteroom){
@@ -86,13 +86,13 @@ var rolePaver = {
                     // did we loose the road?
                     if(!road){
                         // we need to check all the roads now...
-                        for(n=0;n<Memory.paving.roads;n++){
-                            if(!Game.getObjectById(Memory.paving.roads[n])){
+                        for(n=0;n<Memory.paving.roads.length;n++){
+                            if(!Game.getObjectById(Memory.paving.roads[n])){                                //delete the lost.
                                 //delete the lost.
                                 Memory.paving.roads.splice(n,1);
                             }
                         }
-                        // now geht the good roads
+                        // now get the good roads
                         let roads = Memory.paving.roads.map(r => Game.getObjectById(r));
                         //find the closest
                         road = creep.pos.findClosestByRange(roads);
@@ -103,18 +103,18 @@ var rolePaver = {
                 //still no job? Say some sh*t and go home.
                 if(!creep.memory.job){
                     creep.say('All done!')
-                    creep.moveTo(spawn)
+                    creep.travelTo(spawn)
                 }
                 // ok, go working!
                 else if(creep.repair(road) == ERR_NOT_IN_RANGE) {
-                    creep.moveTo(road);
+                    creep.travelTo(road);
                 }
             }
             else if(Game.rooms[siteroom]){
-                creep.moveTo(Game.rooms[siteroom].controller);
+                creep.travelTo(Game.rooms[siteroom].controller);
             }
 	        else{
-	            creep.moveTo(creep.pos.findClosestByPath(creep.room.findExitTo(siteroom)));
+	            creep.travelTo(creep.pos.findClosestByPath(creep.room.findExitTo(siteroom)));
 	        }
         }
         //get energy
@@ -125,18 +125,18 @@ var rolePaver = {
                 if(!conti){
                     if(creep.room.storage){
                         creep.withdraw(creep.room.storage, RESOURCE_ENERGY);
-                        creep.moveTo(creep.room.storage);
+                        creep.travelTo(creep.room.storage);
                     }
                     else{
-                        creep.moveTo(spawn);
+                        creep.travelTo(spawn);
                     }
                 }
                 else if(creep.withdraw(conti, RESOURCE_ENERGY)== ERR_NOT_IN_RANGE){
-                    creep.moveTo(conti);
+                    creep.travelTo(conti);
                 }    
             }
             else if(creep.pickup(drops)== ERR_NOT_IN_RANGE){
-                creep.moveTo(drops);
+                creep.travelTo(drops);
             }
         }
 	    else if(speicher){
@@ -144,11 +144,11 @@ var rolePaver = {
                 creep.withdraw(speicher,RESOURCE_ENERGY);
             }
             else{
-                creep.moveTo(speicher);
+                creep.travelTo(speicher);
             }
         }else if(spawn.room.energyAvailable == spawn.room.energyCapacityAvailable){
                 creep.withdraw(spawn,RESOURCE_ENERGY);
-                creep.moveTo(spawn);
+                creep.travelTo(spawn);
         }
 	}
 };

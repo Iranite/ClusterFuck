@@ -34,24 +34,24 @@ var roleDistributor = {
         if (creep.memory.werk){
             if(targets.length > 0){
                 target = creep.pos.findClosestByRange(targets);
-                creep.moveTo(target);
+                creep.travelTo(target);
                 if(creep.withdraw(speicher,RESOURCE_ENERGY) == 0){creep.say('sneaky',true);}
                 creep.transfer(target, RESOURCE_ENERGY);
             }
             else{
-                creep.moveTo(spawn);
+                creep.travelTo(spawn);
                 creep.memory.werk=false;
             }
         }
         else if(drops.length > 0){
             var target=creep.pos.findClosestByRange(drops);
             if(creep.pickup(target) == ERR_NOT_IN_RANGE) {
-                creep.moveTo(target);
+                creep.travelTo(target);
             }
         }
         else if(tombstone){
             if(creep.withdraw(tombstone,RESOURCE_ENERGY) == ERR_NOT_IN_RANGE){
-                creep.moveTo(tombstone);
+                creep.travelTo(tombstone);
             }
         }
         else if(speicher){
@@ -59,7 +59,7 @@ var roleDistributor = {
                 creep.withdraw(speicher,RESOURCE_ENERGY);
             }
             else{
-                creep.moveTo(speicher);
+                creep.travelTo(speicher);
             }
         }
     }

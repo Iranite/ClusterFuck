@@ -23,14 +23,14 @@ var roleClaimer = {
                 if(Memory.claim[index].rank == 0){creep.reserveController(contr);}
                 else if(Memory.claim[index].rank == 1){creep.claimController(contr);}
             }else{
-            creep.moveTo(contr);
+            creep.travelTo(contr);
             }
         }
         else if(Game.rooms[raum]){
-            creep.moveTo(contr);
+            creep.travelTo(contr);
         }
         else{
-            creep.moveTo(creep.pos.findClosestByPath(creep.room.findExitTo(raum)));
+            creep.travelTo(creep.pos.findClosestByPath(creep.room.findExitTo(raum)));
         }
     }
     

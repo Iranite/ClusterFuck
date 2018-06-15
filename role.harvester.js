@@ -8,6 +8,7 @@ var roleHarvester = {
         var raum = Memory.energie.raum[index];
         let homedex = Memory.rooms[creep.memory.home];
         let spawn = Game.getObjectById(Memory.claim[homedex].spawns[0]);
+        var position = obj => new RoomPosition(obj.x, obj.y, obj.roomName);
         if(Memory.energie.position[index]){var dest = Memory.energie.position[index];}
         //else{var dest = source;}
         
@@ -39,7 +40,7 @@ var roleHarvester = {
     
         if(creep.carry.energy < creep.carryCapacity||carrier) {
             if(raum == Memory.claim[homedex].AlarmRoom&&raum!=creep.memory.home){
-                creep.moveTo(creep.home.controller);
+                creep.travelTo(creep.home.controller);
                 creep.say('Yikes!!!',true);
             }
             else if (creep.room.name == raum){
@@ -48,7 +49,7 @@ var roleHarvester = {
                         Memory.energie.position[index] = creep.pos;
                     }
                     else{
-                        creep.moveTo(source);
+                        creep.travelTo(source);
                     }
                 }
                 else if(JSON.stringify(creep.pos)==JSON.stringify(dest)) {
@@ -64,15 +65,15 @@ var roleHarvester = {
                     creep.harvest(source);
                 }
                 else if(dest){
-                    creep.moveTo(dest.x, dest.y);
+                    creep.travelTo(position(dest));
                 }
                 else{console.log('harvester broken');}
             }
             else if(Game.rooms[raum]){
-                creep.moveTo(source);
+                creep.travelTo(source);
             }
             else{
-                creep.moveTo(creep.pos.findClosestByPath(creep.room.findExitTo(raum)));
+                creep.travelTo(creep.pos.findClosestByPath(creep.room.findExitTo(raum)));
             }
         }
     // no carriers, by death or respawn => harvester will have to haul himself.
@@ -84,7 +85,7 @@ var roleHarvester = {
                                 structure.energy < structure.energyCapacity;}});
             if(targets.length > 0){
                 if(creep.transfer(targets[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                    creep.moveTo(targets[0]);
+                    creep.travelTo(targets[0]);
                 }
             }
         }

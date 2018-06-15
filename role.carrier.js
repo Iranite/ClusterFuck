@@ -30,13 +30,13 @@ var roleCarrier = {
         if(creep.memory.death){
             creep.say('bye...',true);
             if(spawn.recycleCreep(creep) == ERR_NOT_IN_RANGE){
-                creep.moveTo(spawn);
+                creep.travelTo(spawn);
             }
         }
         else if(creep.memory.job && creep.memory.travel) {
             // panic reaction
             if(raum === Memory.claim[homedex].AlarmRoom && raum!==creep.memory.home){
-                creep.moveTo(creep.home.controller);
+                creep.travelTo(creep.home.controller);
                 creep.say('Yikes!!!',true);
                 if(creep.room.name != Memory.claim[homedex].AlarmRoom && creep.carry.energy == 0){
                  creep.memory.travel = false;
@@ -62,7 +62,7 @@ var roleCarrier = {
                         }
                     }
                     else{
-                        creep.moveTo(source);
+                        creep.travelTo(source);
                     }
                 }
                 // try to get container stuff
@@ -74,7 +74,7 @@ var roleCarrier = {
                         }
                     }
                     else{
-                        creep.moveTo(source);
+                        creep.travelTo(source);
                     }
                 }
                 // if its full anyways...
@@ -84,8 +84,8 @@ var roleCarrier = {
                 }
             }
             else{
-                //creep.moveTo(creep.pos.findClosestByPath(creep.room.findExitTo(raum)));
-                creep.moveTo(position(Memory.energie.position[index]));
+                //creep.travelTo(creep.pos.findClosestByPath(creep.room.findExitTo(raum)));
+                creep.travelTo(position(Memory.energie.position[index]));
             }
         }
         
@@ -98,7 +98,7 @@ var roleCarrier = {
             }
             if(linkgy && creep.carry.energy/creep.carryCapacity>1/2){
                 if(creep.transfer(linkA, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                    creep.moveTo(linkA);
+                    creep.travelTo(linkA);
                     creep.transfer(speicher,RESOURCE_ENERGY); //if possible, transfer to storage anyway
                 }
             }
@@ -110,7 +110,7 @@ var roleCarrier = {
                     var target = spawn;
                 }
                 if(creep.transfer(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                    creep.moveTo(target);
+                    creep.travelTo(target);
                 }
             }
             else if(speicher){
@@ -118,7 +118,7 @@ var roleCarrier = {
                     creep.transfer(speicher,RESOURCE_ENERGY);
                 }
                 else{
-                    creep.moveTo(speicher);
+                    creep.travelTo(speicher);
                     creep.transfer(speicher,RESOURCE_ENERGY);
                 }
             }
@@ -127,7 +127,7 @@ var roleCarrier = {
                     creep.drop(RESOURCE_ENERGY);
                 }
                 else{
-                    creep.moveTo(spawn.pos.x, spawn.pos.y-3)
+                    creep.travelTo(spawn.pos.x, spawn.pos.y-3)
                 }
                 
             } 

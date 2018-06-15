@@ -17,7 +17,7 @@ var roleRepairer = {
         if(creep.ticksToLive < creep.carryCapacity/creep.getActiveBodyparts(WORK)+15&&creep.carry.energy == 0){
             creep.say('bye...')
             if(spawn.recycleCreep(creep) == ERR_NOT_IN_RANGE){
-                creep.moveTo(spawn);
+                creep.travelTo(spawn);
             }
         }
         // Go working!
@@ -33,17 +33,17 @@ var roleRepairer = {
                 var defense = creep.pos.findClosestByRange(Defenses);
                 if(defense){creep.memory.job = defense.id;}
                 if(creep.repair(defense) == ERR_NOT_IN_RANGE) {
-                    creep.moveTo(defense);
+                    creep.travelTo(defense);
                 }
                 else if(creep.pos.lookFor(LOOK_STRUCTURES).filter(s => s.structureType == STRUCTURE_ROAD).length){
                     creep.move(Math.ceil(Math.random()*8));
                 }
 	        }else{
 	            if(creep.memory.job){
-	                creep.moveTo(Game.getObjectById(creep.memory.job));
+	                creep.travelTo(Game.getObjectById(creep.memory.job));
 	            }
 	            else{
-	                creep.moveTo(creep.home.controller);
+	                creep.travelTo(creep.home.controller);
 	            }
 	        }
 	    }
@@ -52,11 +52,11 @@ var roleRepairer = {
                 creep.withdraw(speicher,RESOURCE_ENERGY);
             }
             else{
-                creep.moveTo(speicher);
+                creep.travelTo(speicher);
             }
         }else if(spawn.room.energyAvailable == spawn.room.energyCapacityAvailable){
                 creep.withdraw(spawn,RESOURCE_ENERGY);
-                creep.moveTo(spawn);
+                creep.travelTo(spawn);
         }
 	}
 };
