@@ -33,8 +33,8 @@ var roleBuilder = {
 	            creep.say('Yikes!!!',true);
 	        }
 	        else if(creep.room.name == siteroom){
-	            if(creep.pos.x == 0||creep.pos.y == 0){creep.move(3);}
-	            else if(creep.pos.x == 49||creep.pos.y == 49){creep.move(8);}
+	            //if(creep.pos.x == 0||creep.pos.y == 0){creep.move(3);}
+	            //else if(creep.pos.x == 49||creep.pos.y == 49){creep.move(8);}
                 
                 var site = creep.pos.findClosestByRange(sites);
                 if(creep.build(site) == ERR_NOT_IN_RANGE) {

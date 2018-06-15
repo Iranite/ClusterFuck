@@ -14,7 +14,7 @@ var roleBummi = {
         if(creep.hits<creep.hitsMax*3/10){creep.heal(creep);}
         if (creep.room.name === raum){
             if(!enemy){
-                creep.travelTo(new RoomPosition(Memory.init.x,Memory.init.y,raum));
+                if(Memory.init.x){creep.travelTo(new RoomPosition(Memory.init.x,Memory.init.y,raum),{maxOps= 1000});}
                 if(!Memory.init.x && creep.pos.lookFor(LOOK_STRUCTURES).filter(s => s.structureType == STRUCTURE_ROAD).length){
                     creep.move(Math.ceil(Math.random()*8));
                 }

@@ -23,8 +23,8 @@ var roleRepairer = {
         // Go working!
 	    else if(creep.memory.werk) {
              // move a step into the room when on the Exit...
-             if(creep.pos.x == 0||creep.pos.y == 0){creep.move(3);}
-             else if(creep.pos.x == 49||creep.pos.y == 49){creep.move(8);}
+             //if(creep.pos.x == 0||creep.pos.y == 0){creep.move(3);}
+             //else if(creep.pos.x == 49||creep.pos.y == 49){creep.move(8);}
 	        if (creep.room.name === creep.home.name){
     	        var Defenses =[]
     	        for(let each of defenses){
