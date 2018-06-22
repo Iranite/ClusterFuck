@@ -110,8 +110,8 @@ var rolePaver = {
                     creep.travelTo(road);
                 }
             }
-            else if(Game.rooms[siteroom]){
-                creep.travelTo(Game.rooms[siteroom].controller);
+            else if(Game.rooms[siteroom]&&creep.memory.job){
+                creep.travelTo(Game.getObjectById(creep.memory.job));
             }
 	        else{
 	            creep.travelTo(creep.pos.findClosestByPath(creep.room.findExitTo(siteroom)));
