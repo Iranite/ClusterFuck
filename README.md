@@ -1,4 +1,4 @@
-# ClusterFuck
+# ScreepNet
 (This project is currently halted. Javascript and the provided CPU power didn't seem powerful enough to embrace my idea, so I temporarily lost interest.)
 
 Screeps.com offers a platform to create your own AI to battle other people in a real time strategy game.<br>
